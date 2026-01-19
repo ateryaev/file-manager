@@ -1,0 +1,46 @@
+# Node
+node_modules/
+npm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Vite / build
+dist/
+.vite/
+
+# TypeScript
+*.tsbuildinfo
+
+# Local env files
+.env
+.env.*
+
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Optional: lockfiles for package managers
+.pnpm-debug.log
+
+# Optional: coverage
+coverage/
+
+# Optional: Mac
+*.DS_Store
+
+# Optional: JetBrains
+# Ignore project files
+.idea/
+
+# Optional: Compiled output
+/build/
+
+# Misc
+.svelte-kit/
