@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
 body {
-    background-color: theme('colors.blue.500');
+    /* background-color: theme('colors.gray.200');
+    font-family: theme('fontFamily.mono'); */
+}
+
+html {
+    font-family: Courier New, monospace, "Roboto Mono", monospace;
+
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
 }
