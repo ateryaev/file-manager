@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
-import { Card, CardContent } from "./ui/Card";
+import { Card, CardContent, CardHeader } from "./ui/Card";
 import { cn } from "../libs/utils";
 import { clampLocation } from "../libs/location";
 import { useCommanderStore } from "../hooks/useCommanderStore";
+import { useKeyboard } from "../hooks/useKeyboard";
 
 export function FilePane({ paneIndex, startLocation = "RAM://", onExecute, ref, ...props }: {
     paneIndex: number;
@@ -16,7 +17,7 @@ export function FilePane({ paneIndex, startLocation = "RAM://", onExecute, ref, 
     const pane = useCommanderStore(s => s.panes[paneIndex]);
     const navigate = useCommanderStore(s => s.navigate);
     const setSelectedIndex = useCommanderStore(s => s.setSelectedIndex);
-    const modalActionOngoing = useCommanderStore(s => s.modalActionOngoing);
+    const modalActionOngoing = useCommanderStore(s => s.currentDialog !== null);
 
     const selectedRef = useRef<HTMLDivElement>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -42,46 +43,47 @@ export function FilePane({ paneIndex, startLocation = "RAM://", onExecute, ref, 
         selectedRef.current?.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "instant" });
     }, [pane.selectedIndex]);
 
-    useEffect(() => {
-        if (!active) return;
-        if (modalActionOngoing) return;
+    useKeyboard(active && !modalActionOngoing, {
+        ArrowDown: (e) => {
+            handleSelect(Math.min((pane.selectedIndex ?? 0) + 1, pane.items.length - 1));
+        },
+        ArrowUp: (e) => {
+            handleSelect(Math.max((pane.selectedIndex ?? 0) - 1, 0));
+        },
+        Enter: (e) => {
+            handleExecute(pane.selectedIndex ?? 0);
+        }
+    });
 
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "ArrowDown") {
-                handleSelect(Math.min((pane.selectedIndex ?? 0) + 1, pane.items.length - 1));
-                e.preventDefault();
-            }
-            if (e.key === "ArrowUp") {
-                handleSelect(Math.max((pane.selectedIndex ?? 0) - 1, 0));
-                e.preventDefault();
-            }
-            if (e.key === "Enter") {
-                handleExecute(pane.selectedIndex ?? 0);
-                e.preventDefault();
-            }
-            // if (e.key === "F7") {
-            //     console.log("F7 pressed - Create Folder");
-            //     e.preventDefault();
-            // }
-        };
+    // useEffect(() => {
+    //     if (!active) return;
+    //     if (modalActionOngoing) return;
 
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [active, pane.selectedIndex, pane.items.length, modalActionOngoing]);
+    //     const handleKeyDown = (e: KeyboardEvent) => {
+    //         if (e.key === "ArrowDown") {
+    //             handleSelect(Math.min((pane.selectedIndex ?? 0) + 1, pane.items.length - 1));
+    //             e.preventDefault();
+    //         }
+    //         if (e.key === "ArrowUp") {
+    //             handleSelect(Math.max((pane.selectedIndex ?? 0) - 1, 0));
+    //             e.preventDefault();
+    //         }
+    //         if (e.key === "Enter") {
+    //             handleExecute(pane.selectedIndex ?? 0);
+    //             e.preventDefault();
+    //         }
+    //     };
+
+    //     window.addEventListener('keydown', handleKeyDown);
+    //     return () => window.removeEventListener('keydown', handleKeyDown);
+    // }, [active, pane.selectedIndex, pane.items.length, modalActionOngoing]);
 
     return (
-        <Card className={cn('flex-1', active ? 'bg-blue-300' : '')}  {...props}>
-            <CardContent className="bg-gray-50/80 flex gap-2">
-                <span className="flex-1 truncate">{pane.location}</span>
-                <span key={pane.items.length} className="starting:opacity-0 transition-all">{pane.items.length === 0 ? "loading" : ""}</span>
-            </CardContent>
-            <CardContent
-                ref={scrollRef}
-                className=' flex-1 overflow-y-scroll flex flex-col gap-0 cursor-default p-0 pr-1 xscroll-p-1
-                border-4 border-transparent
-                [&::-webkit-scrollbar-thumb]:bg-gray-300
-                  [&::-webkit-scrollbar]:size-2 
-                [&::-webkit-scrollbar]:bg-gray-100'>
+        <Card className={cn('flex-1')}  {...props} variant={active ? 'ready' : 'blur'}>
+            <CardHeader label="files">
+                {pane.location}
+            </CardHeader>
+            <CardContent ref={scrollRef} className='flex flex-col gap-0 cursor-default'>
                 {pane.items.map((file, index) => (
                     <div key={index} className={cn("px-2 py-1 hover:opacity-80",
                         "flex flex-between select-none gap-4",

@@ -13,8 +13,9 @@ interface CommanderState {
     panes: PaneState[];
     focusedPane: number;
 
-    modalActionOngoing: boolean; // to block key handling when modal is open
-    setModalActionOngoing: (ongoing: boolean) => void;
+    currentDialog: 'mkdir' | 'view' | 'delete' | null;
+    showDialog: (type: 'mkdir' | 'view' | 'delete') => void;
+    hideDialog: () => void;
 
     setFocused: (index: number) => void;
     init: (locations: string[]) => Promise<void>;
@@ -41,8 +42,9 @@ export const useCommanderStore = create<CommanderState>((set, get) => ({
     focusedPane: 0,
     setFocused: (index: number) => set({ focusedPane: index % get().panes.length }),
 
-    modalActionOngoing: false,
-    setModalActionOngoing: (ongoing: boolean) => set({ modalActionOngoing: ongoing }),
+    currentDialog: null,
+    showDialog: (type: 'mkdir' | 'view' | 'delete') => set({ currentDialog: type }),
+    hideDialog: () => set({ currentDialog: null }),
 
     init: async (locations: string[]) => {
         set({

@@ -16,8 +16,67 @@ const ROOT: any = {
                 "welcome.txt": { type: 'file', content: new Blob(["Welcome to the RAM Drive! This is a temporary storage area."], { type: 'text/plain' }) }
             }
         },
-        "readme.txt": { type: 'file', content: new Blob(["This is a RAM Drive. Files stored here are temporary and will be lost when the application is closed."], { type: 'text/plain' }) }
-        ,
+        "readme.txt": {
+            type: 'file',
+            content: new Blob([
+                `# RAM Drive - In-Memory File System
+
+## Overview
+Welcome to the RAM Drive! This is a temporary, in-memory file system that provides fast access to files and directories during your session. All data stored here is volatile and will be lost when the application closes or the browser is refreshed.
+
+## Features
+- **High Performance**: All operations are performed in memory for maximum speed
+- **No Persistence**: Perfect for temporary files, caches, and working directories
+- **Full File System API**: Supports standard operations like read, write, delete, mkdir, and ls
+- **Hierarchical Structure**: Organize your files with nested directories
+- **Blob Storage**: Files are stored as Blob objects, supporting various data types
+
+## Use Cases
+1. **Temporary Working Space**: Store intermediate files during data processing
+2. **Cache Storage**: Keep frequently accessed data in memory for quick retrieval
+3. **Development & Testing**: Create and test file operations without affecting persistent storage
+4. **Session-Based Files**: Store user-uploaded files that don't need to persist
+5. **Prototyping**: Quickly test file-based features without backend infrastructure
+
+## Important Notes
+⚠️ **DATA LOSS WARNING**: All files and directories in the RAM Drive are temporary!
+- Files will be LOST when you close the application
+- Files will be LOST when you refresh the browser
+- Files will be LOST if the application crashes
+- There is NO backup or recovery mechanism
+
+## Best Practices
+- Always backup important files to persistent storage (e.g., download to disk)
+- Use RAM Drive for temporary or disposable data only
+- Consider file size limitations based on available memory
+- Monitor memory usage for large file operations
+
+## Getting Started
+This drive comes pre-populated with example files and directories to help you get started:
+- /docs - Documentation and help files
+- /src - Source code examples
+- /assets - Static resources
+- /examples - Sample files demonstrating various features
+- /scripts - Utility scripts
+- /tests - Test files and fixtures
+
+## Technical Details
+- Implementation: TypeScript-based in-memory file system
+- Storage: Files stored as Blob objects in JavaScript memory
+- Structure: Tree-based hierarchy with directories and files
+- Interface: Implements IDrive interface for VFS compatibility
+
+## Support
+For more information about the file system API and usage examples, please refer to the documentation in the /docs directory.
+
+Version: 0.1.0
+Last Updated: ${new Date().toISOString().split('T')[0]}
+
+---
+Remember: This is temporary storage. Always save important work to persistent storage!
+`
+            ], { type: 'text/plain' })
+        },
         "notes.txt": { type: 'file', content: new Blob(["Project notes:\n- Remember to backup important files."], { type: 'text/plain' }) },
         "todo.md": { type: 'file', content: new Blob(["# TODO\n- Implement feature A\n- Fix bug B"], { type: 'text/markdown' }) },
         "license.md": { type: 'file', content: new Blob(["MIT License\n\nCopyright (c) ..."], { type: 'text/markdown' }) },

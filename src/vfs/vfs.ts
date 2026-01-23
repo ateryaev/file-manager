@@ -63,6 +63,11 @@ export class VFS {
         // this.notify(drive);
     }
 
+    static async read(location: string): Promise<Blob> {
+        const [label, path] = location.split(":/");
+        const drive = this.getDrive(label);
+        return await drive.read(path);
+    }
     static getAllLabels(): string[] {
         return Object.keys(this.drives);
     }
