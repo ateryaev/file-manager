@@ -10,6 +10,7 @@ interface PaneState {
 }
 
 interface CommanderState {
+    locations: string[];
     panes: PaneState[];
     focusedPane: number;
 
@@ -24,6 +25,7 @@ interface CommanderState {
     navigate: (paneIndex: number, newPath: string, currentScrollTop: number) => Promise<number>;
 
     setSelectedIndex: (paneIndex: number, itemIndex: number) => void;
+    getSelectedIndex: (paneIndex: number) => number;
     moveSelection: (paneIndex: number, delta: number) => void;
 
     mkdir: (name: string) => Promise<void>;
@@ -38,6 +40,7 @@ const updatePane = (state: CommanderState, index: number, updates: Partial<PaneS
 
 export const useCommanderStore = create<CommanderState>((set, get) => ({
 
+    locations: [],
     panes: [],
     focusedPane: 0,
     setFocused: (index: number) => set({ focusedPane: index % get().panes.length }),
@@ -47,7 +50,9 @@ export const useCommanderStore = create<CommanderState>((set, get) => ({
     hideDialog: () => set({ currentDialog: null }),
 
     init: async (locations: string[]) => {
+
         set({
+            locations: locations,
             panes: locations.map(loc => ({
                 location: loc,
                 items: [],
@@ -58,6 +63,10 @@ export const useCommanderStore = create<CommanderState>((set, get) => ({
         await Promise.all(locations.map((_, index) => get().loadItems(index)));
     },
 
+    getSelectedIndex: (paneIndex: number) => {
+        const pane = get().panes[paneIndex];
+        return pane.selectedIndex;
+    },
     loadItems: async (index: number): Promise<FileEntry[]> => {
         const pane = get().panes[index];
         const items = await VFS.ls(pane.location);
@@ -76,6 +85,13 @@ export const useCommanderStore = create<CommanderState>((set, get) => ({
         const oldPath = oldPane.location;
         const oldName = oldPane.items[oldPane.selectedIndex]?.name || "";
         get().rememberState(paneIndex, oldPath, oldName, currentScrollTop);
+
+        set((state) => ({
+            ...state,
+            locations: state.locations.map((loc, i) =>
+                i === paneIndex ? newPath : loc
+            )
+        }));
 
         set((state) => updatePane(state, paneIndex, { location: newPath }));
 
@@ -105,6 +121,8 @@ export const useCommanderStore = create<CommanderState>((set, get) => ({
         const newIndex = pane.selectedIndex + delta;
         get().setSelectedIndex(paneIndex, newIndex);
     },
+
+
 
     mkdir: async (name: string) => {
         const { focusedPane, panes, loadItems, setSelectedIndex } = get();

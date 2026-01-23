@@ -19,9 +19,9 @@ export function Card({ variant, className, children, ...props }: React.Component
     )
 }
 
-export function CardContent({ className, children, ...props }: React.ComponentProps<"div">) {
+export function CardContent({ ref, className, children, ...props }: React.ComponentProps<"div">) {
     return (
-        <div className={cn('bg-gray-50 flex gap-2 pr-1 border-4 border-transparent flex-1 overflow-y-scroll  overflow-x-auto',
+        <div ref={ref} className={cn('bg-gray-50 flex gap-2 pr-1 border-4 border-transparent flex-1 overflow-y-scroll  overflow-x-auto',
             '[&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar]:size-2 [&::-webkit-scrollbar]:bg-gray-100',
             className)} {...props}>
             {children}

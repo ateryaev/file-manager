@@ -22,7 +22,7 @@ export default function App() {
   useEffect(() => {
     console.log("Initializing VFS and panes");
     VFS.registerDrive("RAM", new RAMDrive());
-    init(["RAM://docs", "RAM://docs"]);
+    init(["RAM://", "RAM://"]);
   }, [init]);
 
   function handleExecute(location: string) {
