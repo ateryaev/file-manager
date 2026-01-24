@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import Files from './pages/Files'
-import View from './pages/View'
+import ViewAsTxt from './pages/ViewAsTxt'
 import { useCommanderStore } from './hooks/useCommanderStore'
 import { RAMDrive } from './vfs/RAMDrive'
 import { VFS } from './vfs/vfs'
+import ViewAsHex from './pages/ViewAsHex'
+import ViewAsImage from './pages/ViewAsImage'
 
 
 // TODO: implement routing instead of page state
@@ -11,7 +13,7 @@ import { VFS } from './vfs/vfs'
 // e.g. #files:RAM://docs - files pane only
 // e.g. #edit:RAM://docs/readme.txt - edit file full screen
 
-type Page = 'files' | 'view'
+type Page = 'files' | 'viewastxt' | 'viewashex' | 'viewasimage'
 
 export default function App() {
 
@@ -27,17 +29,29 @@ export default function App() {
 
   function handleExecute(location: string) {
     setViewFilePath(location)
-    setCurrentPage('view')
+    setCurrentPage('viewashex')
   }
 
+  function handleViewAs(as: "text" | "hex" | "image", filePath: string) {
+    setViewFilePath(filePath)
+    if (as === "text") {
+      setCurrentPage('viewastxt')
+    } else if (as === "hex") {
+      setCurrentPage('viewashex')
+    } else if (as === "image") {
+      setCurrentPage('viewasimage')
+    }
+  }
   function handleBack() {
     setCurrentPage('files')
   }
 
   return (
     <>
-      {currentPage === 'files' && <Files onExecute={handleExecute} />}
-      {currentPage === 'view' && <View filePath={viewFilePath} onBack={handleBack} />}
+      {currentPage === 'files' && <Files onExecute={handleExecute} onViewAs={handleViewAs} />}
+      {currentPage === 'viewastxt' && <ViewAsTxt filePath={viewFilePath} onBack={handleBack} />}
+      {currentPage === 'viewashex' && <ViewAsHex filePath={viewFilePath} onBack={handleBack} />}
+      {currentPage === 'viewasimage' && <ViewAsImage filePath={viewFilePath} onBack={handleBack} />}
     </>
   )
 }

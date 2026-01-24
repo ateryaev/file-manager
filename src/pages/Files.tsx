@@ -7,12 +7,14 @@ import { useKeyboard } from '../hooks/useKeyboard'
 import { DropDrive } from '../vfs/DropDrive'
 import { FileEntry, VFS } from '../vfs/vfs'
 import { clampLocation } from '../libs/location'
+import { ViewAsDialog } from '../dialogs/ViewAsDialog'
 
 interface FilesProps {
-    onExecute: (location: string) => void
+    onExecute: (location: string) => void;
+    onViewAs: (as: "text" | "hex" | "image", filePath: string) => void;
 }
 
-export default function Files({ onExecute }: FilesProps) {
+export default function Files({ onExecute, onViewAs }: FilesProps) {
 
     const locations = useCommanderStore(s => s.locations);
     const setFocusedPane = useCommanderStore(s => s.setFocused);
@@ -32,6 +34,9 @@ export default function Files({ onExecute }: FilesProps) {
         },
         F7: (e) => {
             showDialog('mkdir');
+        },
+        F3: (e) => {
+            showDialog('view');
         },
         F10: (e) => {
             window.showDirectoryPicker({ startIn: 'desktop', mode: 'readwrite' }).then(async (handle: FileSystemDirectoryHandle) => {
@@ -61,6 +66,22 @@ export default function Files({ onExecute }: FilesProps) {
         }
     }
 
+    function handleViewAs(as: "text" | "hex" | "image") {
+
+        // const location = locations[focusedPane];
+        // const filePath = clampLocation(`${location}`);
+        const selectedIndex = useCommanderStore.getState().getSelectedIndex(focusedPane);
+        const items = useCommanderStore.getState().panes[focusedPane]?.items || [];
+        const file = items[selectedIndex];
+        if (!file || file.kind !== "file") {
+            console.warn("No file selected to view as", file);
+            return;
+        }
+        const filePath = clampLocation(`${locations[focusedPane]}/${file.name}`);
+        hideDialog();
+        onViewAs?.(as, filePath);
+    }
+
     async function handleCreateFolder(folderName: string) {
         await mkdir(folderName);
         hideDialog();
@@ -85,6 +106,9 @@ export default function Files({ onExecute }: FilesProps) {
 
             {currentDialog === 'mkdir' && (
                 <ModalMkDir onCreate={handleCreateFolder} onCancel={hideDialog} />
+            )}
+            {currentDialog === 'view' && (
+                <ViewAsDialog onViewAs={handleViewAs} onCancel={hideDialog} />
             )}
         </div>
     )

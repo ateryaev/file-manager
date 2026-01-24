@@ -3,6 +3,7 @@ import { Modal } from "./Modal";
 import { Button } from "./ui/Button";
 import { cn } from "../libs/utils";
 import { Card, CardContent } from "./ui/Card";
+import { ArrowNavigator } from "./ArrowNavigator";
 
 function validateFolderName(name: string): boolean {
     name = name.trim();
@@ -44,10 +45,12 @@ export function ModalMkDir({ onCreate, onCancel }: {
                             'bg-white  focus:ring-blue-300')}
                         placeholder="Folder name" />
 
-                    <div className='flex justify-center w-full gap-2 pt-2'>
-                        <Button outline onClick={onCancel}>Cancel</Button>
-                        <Button disabled={!isValid} outline onClick={handleCreateFolder}>Create</Button>
-                    </div>
+                    <ArrowNavigator variant="horizontal">
+                        <div className='flex justify-center w-full gap-2 pt-2'>
+                            <Button outline onClick={onCancel}>Cancel</Button>
+                            <Button disabled={!isValid} outline onClick={handleCreateFolder}>Create</Button>
+                        </div>
+                    </ArrowNavigator>
                 </CardContent>
             </Card>
         </Modal >

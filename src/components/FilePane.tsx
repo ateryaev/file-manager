@@ -39,7 +39,7 @@ const FilePaneItem = memo(function FilePaneItem({
             onMouseDown={() => setSelectedIndex(paneIndex, index)}
         >
             <span className="flex-1 truncate whitespace-nowrap">{file.kind === "directory" ? "📁" : "📄"} {file.name}</span>
-            <span>{file.size ? `${file.size} bytes` : "Folder"}</span>
+            <span>{file.kind === "directory" ? "Folder" : `${file.size || 0} bytes`}</span>
             <span>{file.lastModified ? new Date(file.lastModified).toLocaleString() : "??/??/????, XX:XX:??"}</span>
 
         </div>
@@ -62,6 +62,7 @@ export const FilePane = memo(function FilePane({ paneIndex, location = "RAM://",
     const moveSelection = useCommanderStore(s => s.moveSelection);
     const modalActionOngoing = useCommanderStore(s => s.currentDialog !== null);
     const getSelectedIndex = useCommanderStore(s => s.getSelectedIndex);
+    const setSelectedIndex = useCommanderStore(s => s.setSelectedIndex);
 
     const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -87,6 +88,12 @@ export const FilePane = memo(function FilePane({ paneIndex, location = "RAM://",
         },
         ArrowUp: (e) => {
             moveSelection(paneIndex, -1);
+        },
+        ArrowLeft: (e) => {
+            setSelectedIndex(paneIndex, 0);
+        },
+        ArrowRight: (e) => {
+            setSelectedIndex(paneIndex, items.length - 1);
         },
         Enter: (e) => {
             const selectedIndex = getSelectedIndex(paneIndex);

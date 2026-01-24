@@ -49,7 +49,7 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
             <CardContent className="justify-between">
                 <FButton fkey="F1" >Help</FButton>
                 <FButton fkey="F2" disabled>Settings</FButton>
-                <FButton fkey="F3" disabled>View</FButton>
+                <FButton fkey="F3" onClick={() => onAction?.('view')}>View...</FButton>
                 <FButton fkey="F4" disabled>Edit</FButton>
                 <FButton fkey="F5" disabled>Copy</FButton>
                 <FButton fkey="F6" disabled>RenMove</FButton>

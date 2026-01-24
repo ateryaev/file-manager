@@ -80,6 +80,7 @@ export class DropDrive implements IDrive {
 
         const fileHandle = handle as FileSystemFileHandle;
         const file = await fileHandle.getFile();
+        console.log("Reading file from DropDrive:", path, file);
         return file;
     }
 
