@@ -9,6 +9,29 @@ export async function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export function formatTime(ts?: number): string {
+    // Format timestamp as "YYYY-MM-DD HH:MM:SS"
+    if (!ts) return "Date\u00A0\u00A0\u00A0\u00A0\u00A0Time".padStart(19, "\u00A0"); // non-breaking spaces
+    const date = new Date(ts);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+
+export function formatBytes(bytes: number, decimals = 2): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
 export async function hasNonTextCharsInStart(blob: Blob): Promise<boolean> {
     //test 1024 bytes for 0-8 control characters
     const text = await blob.slice(0, 1024).text();

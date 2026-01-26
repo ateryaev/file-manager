@@ -95,6 +95,34 @@ export class DropDrive implements IDrive {
     async mkdir(path: string): Promise<void> {
         throw new Error("DropDrive is read-only");
     }
+
+    async info(path: string): Promise<FileEntry> {
+        const handle = await this.navigate(path);
+
+        if (!handle) {
+            throw new Error("File or directory not found");
+        }
+
+        const name = path.split('/').filter(Boolean).pop() || this.rootHandle.name;
+
+        if (handle.kind === 'file') {
+            const fileHandle = handle as FileSystemFileHandle;
+            const file = await fileHandle.getFile();
+            return {
+                name,
+                kind: 'file',
+                size: file.size,
+                lastModified: file.lastModified
+            };
+        } else {
+            return {
+                name,
+                kind: 'directory',
+                size: 0,
+                lastModified: Date.now()
+            };
+        }
+    }
 }
 
 

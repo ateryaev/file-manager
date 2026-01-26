@@ -15,16 +15,18 @@ export interface IDrive {
     write(path: string, data: Blob): Promise<void>;
     rm(path: string): Promise<void>;
     mkdir(path: string): Promise<void>;
+    info(path: string): Promise<FileEntry>;
 }
 
 
 function fileSort(a: FileEntry, b: FileEntry) {
+    if (a.name === "..") return -1;
+    if (b.name === "..") return 1;
     if (a.kind === b.kind) {
         return a.name.localeCompare(b.name);
     }
     return a.kind === "directory" ? -1 : 1;
 }
-
 
 export class VFS {
     private static drives: Record<string, IDrive> = {};
@@ -47,6 +49,7 @@ export class VFS {
         const [label, path] = location.split(":/");
         const drive = this.getDrive(label);
         console.log(`VFS.ls called on drive: ${label}, path: ${path}`);
+        //await sleep(500); // Simulate latency
         let items = await drive.ls(path);
         if (path !== "/") {
             items.push({ name: "..", kind: "directory" });
@@ -60,7 +63,7 @@ export class VFS {
         const drive = this.getDrive(label);
         const newPath = path === "/" ? `/${name}` : `${path}/${name}`;
         await drive.mkdir(newPath);
-        // this.notify(drive);
+        this.notify(location);
     }
 
     static async read(location: string): Promise<Blob> {
@@ -73,16 +76,16 @@ export class VFS {
     }
 
     // --- Pub/Sub for UI Sync ---
-    // static notify(drive: IDrive) {
-    //     //TODO: add path as parameter to optimize updates
-    //     const label = Object.keys(this.drives).find(key => this.drives[key] === drive);
-    //     console.log("VFS.notify called for drive:", label || "unknown");
-    //     if (label) this.bus.dispatchEvent(new CustomEvent(this.CHANGE_EVENT, { detail: label }));
-    // }
+    static notify(location: string) {
+        //TODO: add path as parameter to optimize updates
+        //const label = Object.keys(this.drives).find(key => this.drives[key] === drive);
+        console.log("VFS.notify called for location:", location || "unknown");
+        if (location) this.bus.dispatchEvent(new CustomEvent(this.CHANGE_EVENT, { detail: location }));
+    }
 
-    // static subscribe(label: string, callback: () => void) {
-    //     const handler = (e: any) => { if (e.detail === label) callback(); };
-    //     this.bus.addEventListener(this.CHANGE_EVENT, handler);
-    //     return () => this.bus.removeEventListener(this.CHANGE_EVENT, handler);
-    // }
+    static subscribe(location: string, callback: () => void) {
+        const handler = (e: any) => { if (e.detail === location) callback(); };
+        this.bus.addEventListener(this.CHANGE_EVENT, handler);
+        return () => this.bus.removeEventListener(this.CHANGE_EVENT, handler);
+    }
 }

@@ -13,7 +13,13 @@ const ROOT: any = {
         ".gitkeep": { type: 'file', content: new Blob([]) },
         "docs": {
             type: 'dir', children: {
-                "welcome.txt": { type: 'file', content: new Blob(["Welcome to the RAM Drive! This is a temporary storage area."], { type: 'text/plain' }) }
+                "welcome.txt": { type: 'file', content: new Blob(["Welcome to the RAM Drive! This is a temporary storage area."], { type: 'text/plain' }) },
+                "help.md": { type: 'file', content: new Blob(["# Help Documentation\n\nThis is the help file for the RAM Drive."], { type: 'text/markdown' }) },
+                "faq.txt": { type: 'file', content: new Blob(["Q: Is this storage permanent?\nA: No, all data will be lost when the application closes."], { type: 'text/plain' }) },
+                "guide.pdf": { type: 'file', content: new Blob([]) },
+                "manual.docx": { type: 'file', content: new Blob([]) },
+                "tutorial.txt": { type: 'file', content: new Blob(["This is a tutorial file to help you get started."], { type: 'text/plain' }) },
+                "overview.md": { type: 'file', content: new Blob(["# RAM Drive Overview\n\nThe RAM Drive is an in-memory file system."], { type: 'text/markdown' }) },
             }
         },
         "image.svg": { type: 'file', content: new Blob([`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" /></svg>`], { type: 'image/svg+xml' }) },
@@ -200,6 +206,31 @@ export class RAMDrive implements IDrive {
     async mkdir(path: string) {
         this.navigate(path, true);
         console.log(`Created directory at ${path}`)
+    }
+
+    async info(path: string): Promise<FileEntry> {
+        const node = this.navigate(path);
+        if (!node) {
+            throw new Error("File or directory not found");
+        }
+
+        const name = path.split('/').filter(Boolean).pop() || 'root';
+
+        if (node.type === 'file') {
+            return {
+                name,
+                kind: 'file',
+                size: node.content?.size || 0,
+                lastModified: Date.now()
+            };
+        } else {
+            return {
+                name,
+                kind: 'directory',
+                size: 0,
+                lastModified: Date.now()
+            };
+        }
     }
 }
 

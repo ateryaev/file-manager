@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import Files from './pages/Files'
 import ViewAsTxt from './pages/ViewAsTxt'
-import { useCommanderStore } from './hooks/useCommanderStore'
 import { RAMDrive } from './vfs/RAMDrive'
 import { VFS } from './vfs/vfs'
 import ViewAsHex from './pages/ViewAsHex'
@@ -15,17 +14,16 @@ import ViewAsImage from './pages/ViewAsImage'
 
 type Page = 'files' | 'viewastxt' | 'viewashex' | 'viewasimage'
 
+VFS.registerDrive("RAM", new RAMDrive());
+
+
+
 export default function App() {
 
+  const [locations, setLocations] = useState<string[]>(["RAM://", "RAM://docs"])
   const [currentPage, setCurrentPage] = useState<Page>('files')
   const [viewFilePath, setViewFilePath] = useState<string>('')
 
-  const init = useCommanderStore(s => s.init);
-  useEffect(() => {
-    console.log("Initializing VFS and panes");
-    VFS.registerDrive("RAM", new RAMDrive());
-    init(["RAM://", "RAM://"]);
-  }, [init]);
 
   function handleExecute(location: string) {
     setViewFilePath(location)

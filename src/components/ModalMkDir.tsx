@@ -12,22 +12,33 @@ function validateFolderName(name: string): boolean {
     return !invalidChars.test(name);
 }
 
-export function ModalMkDir({ onCreate, onCancel }: {
-    onCreate: (folderName: string) => void;
-    onCancel: () => void;
-}) {
-    const [folderName, setFolderName] = useState("");
+
+// Update the component to accept a resolve/reject callback pattern
+interface ModalMkDirProps {
+    defaultValue?: string;
+    onResolve: (folderName: string | null) => void;
+}
+
+export function ModalMkDir({ defaultValue = "", onResolve }: ModalMkDirProps) {
+    const [folderName, setFolderName] = useState(defaultValue);
     const isValid = validateFolderName(folderName);
 
+    useEffect(() => {
+        setFolderName(defaultValue);
+    }, [defaultValue]);
 
     function handleCreateFolder(e: React.MouseEvent | React.KeyboardEvent) {
         e.preventDefault();
         if (!isValid) return;
-        onCreate(folderName.trim());
+        onResolve(folderName.trim());
     }
 
+    const handleCancel = () => {
+        onResolve(null);
+    };
+
     return (
-        <Modal open={true} onClose={onCancel}>
+        <Modal open={true} onClose={handleCancel}>
 
             <Card variant="ready" className='m-2 max-h-[80svh] ring-black/5 ring-4 gap-0'>
                 <CardContent className='flex-col overflow-auto xgap-4 p-8 py-4 '>
@@ -47,7 +58,7 @@ export function ModalMkDir({ onCreate, onCancel }: {
 
                     <ArrowNavigator variant="horizontal">
                         <div className='flex justify-center w-full gap-2 pt-2'>
-                            <Button outline onClick={onCancel}>Cancel</Button>
+                            <Button outline onClick={handleCancel}>Cancel</Button>
                             <Button disabled={!isValid} outline onClick={handleCreateFolder}>Create</Button>
                         </div>
                     </ArrowNavigator>

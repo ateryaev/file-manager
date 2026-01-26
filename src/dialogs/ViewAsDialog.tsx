@@ -14,13 +14,14 @@ function DialogButton({ onClick, children }: { onClick: () => void; children: Re
         </Button>
     )
 }
-export function ViewAsDialog({ onViewAs, onCancel }: {
-    onViewAs: (as: "text" | "hex" | "image") => void;
-    onCancel: () => void;
-}) {
+interface ViewAsDialogProps {
+    onResolve: (viewType: "text" | "hex" | "image" | null) => void;
+}
+
+export function ViewAsDialog({ onResolve }: ViewAsDialogProps) {
 
     return (
-        <Modal open={true} onClose={onCancel}>
+        <Modal open={true} onClose={() => onResolve(null)}>
 
             <Card variant="ready" className='m-2 max-h-[80svh] ring-black/5 ring-4 gap-0'>
                 <CardContent className='flex-col overflow-auto gap-4 p-8 py-4 '>
@@ -31,14 +32,14 @@ export function ViewAsDialog({ onViewAs, onCancel }: {
                     <ArrowNavigator variant="vertical">
                         <div className='flex flex-col gap-1 -mx-1 p-1
                         ring-4 ring-gray-300 bg-white focus-within:ring-blue-300'>
-                            <DialogButton onClick={() => onViewAs("text")}>Text file</DialogButton>
-                            <DialogButton onClick={() => onViewAs("hex")}>Binary hexadecimal view</DialogButton>
-                            <DialogButton onClick={() => onViewAs("image")}>Image (coming soon)</DialogButton>
+                            <DialogButton onClick={() => onResolve("text")}>Text file</DialogButton>
+                            <DialogButton onClick={() => onResolve("hex")}>Binary hexadecimal view</DialogButton>
+                            <DialogButton onClick={() => onResolve("image")}>Image (coming soon)</DialogButton>
                         </div>
                     </ArrowNavigator>
 
                     <div className='flex justify-center w-full gap-2 pt-2'>
-                        <Button outline onClick={onCancel}>Cancel</Button>
+                        <Button outline onClick={() => onResolve(null)}>Cancel</Button>
                     </div>
                 </CardContent>
             </Card>
