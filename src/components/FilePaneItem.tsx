@@ -1,7 +1,8 @@
 import { memo, useEffect, useRef } from "react";
 import { usePaneStore } from "../hooks/usePaneStore";
-import { cn, formatBytes, formatTime } from "../libs/utils";
+import { cn, formatBytes, formatDate, formatTime } from "../libs/utils";
 import { FileEntry } from "../vfs/vfs";
+import { IconFile, IconFileDescription, IconFileFilled, IconFileText, IconFileTextFilled, IconFolder, IconFolderFilled, IconFolderUp } from "@tabler/icons-react";
 
 export const FilePaneItem = memo(function FilePaneItem({
     file,
@@ -29,27 +30,34 @@ export const FilePaneItem = memo(function FilePaneItem({
     const size = file.kind === "file" ? `${formatBytes(file.size || 0)}` :
         file.name === ".." ? "Up" : "Folder";
 
-    let icon = file.kind === "directory" ? "📁" : "📄";
-    //if (file.name === "..") icon = "⬆️"//"⬆️";
+    //let icon = file.kind === "directory" ? "📁" : "📄";
 
-    // let icon = file.kind === "directory" ? "[+]" : "[-]";
-    // if (file.name === "..") icon = "[^]";
+    const iconsize = 18;
+    let icon = file.kind === "directory" ?
+        <IconFolderFilled size={iconsize} className="text-yellow-400 shrink-0" /> :
+        <IconFile size={iconsize} opacity={0.2} className="shrink-0" />;
+    if (file.name === "..") icon = <IconFolderUp size={iconsize} className="text-yellow-400 shrink-0" />;
 
     return (
         <div
             ref={selectedRef}
-            className={cn(
-                "px-2 py-1 flex flex-between select-none gap-4 hover:opacity-80",
+            className={cn("@container",
+                "px-2 py-1 flex flex-between items-center select-none gap-4 hover:opacity-80 overflow-hidden shrink-0",
                 "starting:opacity-0 transition-opacity duration-100",
                 isSelected && "bg-gray-200 text-black",
-                isSelected && "group-[.activepane]:bg-blue-500 group-[.activepane]:text-white",
+                isSelected && "group-[.readycard]:bg-blue-400 group-[.readycard]:text-white",
             )}
             onDoubleClick={() => onExecute?.(file)}
             onMouseDown={handleSelect}
         >
-            <span className="flex-1 truncate whitespace-nowrap">{icon} {file.name}</span>
-            <span>{size}</span>
-            <span>{formatTime(file.lastModified)}</span>
+
+            <div className="hidden @[100px]:block">{icon}</div>
+            <div className="flex-1 truncate">
+                {file.name}
+            </div>
+            <div className="hidden @[300px]:block">{size}</div>
+            <div className="hidden @[400px]:block">{formatDate(file.lastModified)}</div>
+            <div className="hidden @[500px]:block">{formatTime(file.lastModified)}</div>
 
         </div>
     );

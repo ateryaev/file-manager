@@ -72,9 +72,7 @@ export const FilePane = memo(function FilePane({ paneIndex, ...props }: {
     console.log(`RENDER PANE ${paneIndex} : ${paneLocation}`);
 
     return (
-        <Card
-            className={cn('flex-1', active && "group activepane")}
-            variant={active ? 'ready' : 'blur'} {...props}>
+        <Card className={cn('flex-1')} variant={active ? 'ready' : 'blur'} {...props}>
             <CardHeader label="files">
                 {paneLocation}
             </CardHeader>

@@ -9,17 +9,24 @@ export async function sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export function formatTime(ts?: number): string {
-    // Format timestamp as "YYYY-MM-DD HH:MM:SS"
-    if (!ts) return "Date\u00A0\u00A0\u00A0\u00A0\u00A0Time".padStart(19, "\u00A0"); // non-breaking spaces
+export function formatDate(ts?: number): string {
+    // Format timestamp as "YYYY-MM-DD"
+    if (!ts) return "Date".padStart(10, "\u00A0"); // non-breaking spaces
     const date = new Date(ts);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+export function formatTime(ts?: number): string {
+    // Format timestamp as "HH:MM:SS"
+    if (!ts) return "Time".padStart(8, "\u00A0"); // non-breaking spaces
+    const date = new Date(ts);
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     const seconds = String(date.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    return `${hours}:${minutes}:${seconds}`;
 }
 
 
