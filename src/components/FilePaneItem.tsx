@@ -32,7 +32,7 @@ export const FilePaneItem = memo(function FilePaneItem({
 
     //let icon = file.kind === "directory" ? "📁" : "📄";
 
-    const iconsize = 18;
+    const iconsize = "1em";
     let icon = file.kind === "directory" ?
         <IconFolderFilled size={iconsize} className="text-yellow-400 shrink-0" /> :
         <IconFile size={iconsize} opacity={0.2} className="shrink-0" />;

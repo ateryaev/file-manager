@@ -1,6 +1,6 @@
-import { use, useCallback, useEffect, useState } from 'react'
-import { FilePane } from '../components/FilePane'
-import { ModalMkDir } from '../components/ModalMkDir'
+import { use, useCallback, useContext, useEffect, useState } from 'react'
+import { Pane } from '../components/Pane'
+import { ModalMkDir } from '../dialogs/ModalMkDir'
 import { Footer } from '../components/Footer'
 import { useKeyboard } from '../hooks/useKeyboard'
 import { DropDrive } from '../vfs/DropDrive'
@@ -9,6 +9,8 @@ import { clampLocation } from '../libs/location'
 import { ViewAsDialog } from '../dialogs/ViewAsDialog'
 import { usePaneStore } from '../hooks/usePaneStore'
 import { modalManager } from '../libs/modalManager'
+import { modalState } from '../components/Modal'
+import { PaneContextProvider, PanesContext, PanesContextProvider } from '../components/pane/PaneContext'
 
 interface FilesProps {
     onExecute: (location: string) => void;
@@ -17,6 +19,8 @@ interface FilesProps {
 
 export default function Files({ onExecute, onViewAs }: FilesProps) {
     console.log("Rendering FILES page");
+
+    const { activePane, setActivePane } = useContext(PanesContext);
 
     // const setFocusedPane = useCommanderStore(s => s.setFocused);
     // const focusedPane = useCommanderStore(s => s.focusedPane);
@@ -28,71 +32,48 @@ export default function Files({ onExecute, onViewAs }: FilesProps) {
     // const navigate = useCommanderStore(s => s.navigate);
     // const rememberState = useCommanderStore(s => s.rememberState);
 
-    useKeyboard(true, {
+    useKeyboard({
         Tab: (e) => {
-            usePaneStore.getState().setActivePane((usePaneStore.getState().activePane + 1) % usePaneStore.getState().getPanesCount());
             e.preventDefault();
-
+            setActivePane((activePane + 1) % 2);
         },
-        F7: async (e) => {
-            e.preventDefault();
-            const currentLocation = usePaneStore.getState().getLocation(usePaneStore.getState().activePane);
 
-            const folderName = await modalManager.show<string | null>(ModalMkDir, { defaultValue: "new folder 1" });
+        // F3: async (e) => {
+        //     e.preventDefault();
+        //     const activePane = usePaneStore.getState().activePane;
+        //     const cursor = usePaneStore.getState().getCursor(activePane);
+        //     const location = usePaneStore.getState().getLocation(activePane);
+        //     const items = await VFS.ls(location);
+        //     const file = items.find(item => item.name === cursor);
 
-            if (folderName) {
-                await VFS.mkdir(currentLocation, folderName);
-                usePaneStore.getState().setCursorHistory(usePaneStore.getState().activePane, folderName);
-            }
-        },
-        F3: async (e) => {
-            e.preventDefault();
-            const activePane = usePaneStore.getState().activePane;
-            const cursor = usePaneStore.getState().getCursor(activePane);
-            const location = usePaneStore.getState().getLocation(activePane);
-            const items = await VFS.ls(location);
-            const file = items.find(item => item.name === cursor);
+        //     if (!file || file.kind !== "file") {
+        //         console.warn("No file selected to view");
+        //         return;
+        //     }
 
-            if (!file || file.kind !== "file") {
-                console.warn("No file selected to view");
-                return;
-            }
+        //     const viewType = await modalManager.show<"text" | "hex" | "image" | null>(ViewAsDialog, {});
 
-            const viewType = await modalManager.show<"text" | "hex" | "image" | null>(ViewAsDialog, {});
+        //     if (viewType) {
+        //         const filePath = clampLocation(`${location}/${file.name}`);
+        //         onViewAs?.(viewType, filePath);
+        //     }
+        // },
+        // F10: (e) => {
+        //     window.showDirectoryPicker({ startIn: 'desktop', mode: 'readwrite' }).then(async (handle: FileSystemDirectoryHandle) => {
+        //         VFS.registerDrive(handle.name, new DropDrive(handle));
 
-            if (viewType) {
-                const filePath = clampLocation(`${location}/${file.name}`);
-                onViewAs?.(viewType, filePath);
-            }
-        },
-        F10: (e) => {
-            window.showDirectoryPicker({ startIn: 'desktop', mode: 'readwrite' }).then(async (handle: FileSystemDirectoryHandle) => {
-                VFS.registerDrive(handle.name, new DropDrive(handle));
-                usePaneStore.getState().setLocation(usePaneStore.getState().activePane, `${handle.name}://`);
-                //await navigate(focusedPane, `${handle.name}://`, 0);
-                // console.log("Directory handle:", handle);
-                // if (handle) {
-                //     for await (const entry of handle.values()) {
-                //         console.log(entry, entry.name, entry.kind);
-                //     }
-                // }
-            });
-        }
-    });
+        //         //usePaneStore.getState().setLocation(usePaneStore.getState().activePane, `${handle.name}://`);
+        //         //await navigate(focusedPane, `${handle.name}://`, 0);
+        //         // console.log("Directory handle:", handle);
+        //         // if (handle) {
+        //         //     for await (const entry of handle.values()) {
+        //         //         console.log(entry, entry.name, entry.kind);
+        //         //     }
+        //         // }
+        //     });
+        // }
+    }, true);
 
-    // async function handleExecute(paneIndex: number, file: FileEntry, scrollTop?: number) {
-    //     const name = file.name;
-    //     rememberState(paneIndex, locations[paneIndex], name, scrollTop ?? 0);
-    //     //TODO: how to save scrollTop for other panes?
-    //     if (file.kind === "file") {
-    //         onExecute?.(clampLocation(`${locations[paneIndex]}/${name}`));
-    //         return;
-    //     } else if (file.kind === "directory") {
-    //         //const newScrollTop = 
-    //         await navigate(paneIndex, clampLocation(`${locations[paneIndex]}/${name}`), scrollTop ?? 0);
-    //         //scrollRef.current && (scrollRef.current.scrollTop = newScrollTop);
-    //     }
-    // }
 
     const handleExecute = useCallback(async (file: FileEntry) => {
         if (file.kind === "directory") {
@@ -109,15 +90,14 @@ export default function Files({ onExecute, onViewAs }: FilesProps) {
         <div className='flex flex-col max-h-svh min-h-svh p-2 gap-2 bg-gray-100 shrink-0'>
 
             <div className='flex-1 flex flex-row gap-2 shrink-0xx overflow-hidden'>
-                {[0, 1].map((_, i) => (
-                    <FilePane
-                        key={i}
-                        paneIndex={i}
-                        //location={location}
-                        onMouseDown={() => usePaneStore.getState().setActivePane(i)}
-                    // onExecute={handleExecute}
-                    />
-                ))}
+
+                <PaneContextProvider>
+                    <Pane />
+                </PaneContextProvider>
+                <PaneContextProvider>
+                    <Pane />
+                </PaneContextProvider>
+
             </div>
 
             <Footer onAction={() => { }} />

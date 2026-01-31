@@ -22,6 +22,24 @@ const ROOT: any = {
                 "overview.md": { type: 'file', content: new Blob(["# RAM Drive Overview\n\nThe RAM Drive is an in-memory file system."], { type: 'text/markdown' }) },
             }
         },
+        "xxx": {
+            type: 'dir', children: {
+                // Generate 200 files named file001.txt to file200.txt, each with some content
+                ...(() => {
+                    const files: Record<string, any> = {};
+                    for (let i = 1; i <= 200; i++) {
+                        const num = i.toString().padStart(3, '0');
+                        const fname = `file${num}.txt`;
+                        files[fname] = {
+                            type: 'file',
+                            content: new Blob([`This is content for ${fname} in /xxx directory. Line number: ${i}`], { type: 'text/plain' })
+                        };
+                    }
+                    return files;
+                })(),
+            }
+        },
+        "xxx.bin": { type: 'file', content: new Blob([new ArrayBuffer(1024 * 1024 * 10)], { type: 'application/octet-stream' }) },
         "image.svg": { type: 'file', content: new Blob([`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" /></svg>`], { type: 'image/svg+xml' }) },
         "readme.txt": {
             type: 'file',
@@ -172,7 +190,7 @@ export class RAMDrive implements IDrive {
     }
 
     async ls(path: string): Promise<FileEntry[]> {
-        await sleep(10); // Simulate async delay
+        await sleep(500); // Simulate async delay
         const node = this.navigate(path);
         if (!node || node.type !== 'dir') return [];
         return Object.entries(node.children).map(([name, data]: [string, any]) => ({
@@ -191,6 +209,7 @@ export class RAMDrive implements IDrive {
     }
 
     async read(path: string) {
+        await sleep(500); // Simulate async delay
         const node = this.navigate(path);
         if (!node || node.type !== 'file') throw new Error("Not found");
         return node.content;

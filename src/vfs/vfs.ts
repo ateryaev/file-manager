@@ -45,6 +45,12 @@ export class VFS {
         return drive;
     }
 
+    static async info(location: string): Promise<FileEntry> {
+        const [label, path] = location.split(":/");
+        const drive = this.getDrive(label);
+        return await drive.info(path);
+    }
+
     static async ls(location: string): Promise<FileEntry[]> {
         const [label, path] = location.split(":/");
         const drive = this.getDrive(label);
@@ -63,6 +69,13 @@ export class VFS {
         const drive = this.getDrive(label);
         const newPath = path === "/" ? `/${name}` : `${path}/${name}`;
         await drive.mkdir(newPath);
+        this.notify(location);
+    }
+    static async rm(location: string, name: string): Promise<void> {
+        const [label, path] = location.split(":/");
+        const drive = this.getDrive(label);
+        const newPath = path === "/" ? `/${name}` : `${path}/${name}`;
+        await drive.rm(newPath);
         this.notify(location);
     }
 

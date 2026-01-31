@@ -23,17 +23,17 @@ export function CardContent({ ref, className, children, ...props }: React.Compon
     return (
         <div ref={ref} className={cn('bg-gray-50 flex gap-2 pr-1 border-4 border-transparent flex-1 overflow-y-scroll  overflow-x-auto',
             '[&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar]:size-2 [&::-webkit-scrollbar]:bg-gray-100',
-            className)} {...props}>
+            className)} {...props} >
             {children}
         </div>
     )
 }
 
-export function CardHeader({ className, label, children, ...props }: React.ComponentProps<"div"> & { label?: string }) {
+export function CardHeader({ className, label, children, ...props }: React.ComponentProps<"div"> & { label?: any }) {
     const { variant } = useContext(CardContext);
     return (
-        <div className={cn('bg-gray-50/80 p-1 flex gap-2', className)} {...props}>
-            {label && <span className={cn('bg-blue-300 text-white px-2 py-1  select-none ',
+        <div className={cn('bg-gray-50/80 p-1 flex gap-1', className)} {...props}>
+            {label && <span className={cn('bg-blue-300 text-white white px-2 py-1 grid items-center  select-none ',
                 variant === 'blur' && 'bg-gray-200',
                 variant === 'ready' && 'bg-blue-300',
                 variant === 'loading' && 'bg-blue-300 animate-pulse',

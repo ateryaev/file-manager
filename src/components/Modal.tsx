@@ -2,6 +2,13 @@ import { useRef, useEffect, useState } from 'react';
 import { Card, CardContent } from './ui/Card';
 import { FocusTrap } from 'focus-trap-react';
 
+let modalCount = 0;
+export const modalState = {
+    increment: () => { modalCount++; },
+    decrement: () => { modalCount = Math.max(0, modalCount - 1); },
+    isOpen: () => modalCount > 0
+};
+
 export function Modal({ open, children, onClose }: { open: boolean, children: React.ReactNode, onClose?: () => void }) {
     const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -9,18 +16,11 @@ export function Modal({ open, children, onClose }: { open: boolean, children: Re
     useEffect(() => { setActive(open); }, [open]);
 
     useEffect(() => {
-        const dialog = dialogRef.current;
-        if (!dialog) return;
-
+        console.log("MODAL COUNT:", modalCount);
         if (open) {
-            dialog.showModal();
-            // const focusableElements = dialog.querySelectorAll<HTMLElement>('input');
-            // console.log('Focusing element:', focusableElements);
-            // if (focusableElements.length > 0) {
-            //      focusableElements[0].focus();
-            // }
-        } else {
-            dialog.close();
+            dialogRef.current?.showModal();
+            modalState.increment();
+            return () => modalState.decrement();
         }
     }, [open]);
 

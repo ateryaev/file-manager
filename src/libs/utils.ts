@@ -53,6 +53,37 @@ export async function hasNonTextCharsInStart(blob: Blob): Promise<boolean> {
     return controlChars / text.length > 0.1;
 }
 
+export async function isImage(blob: Blob): Promise<boolean> {
+    // 1. Basic type check (fastest)
+    if (!blob.type.startsWith('image/')) return false;
+
+    const url = URL.createObjectURL(blob);
+
+    try {
+        return await new Promise((resolve) => {
+            const img = new Image();
+
+            img.onload = () => {
+                // Success! Clean up and return true
+                URL.revokeObjectURL(url);
+                resolve(img.width > 0 && img.height > 0);
+            };
+
+            img.onerror = () => {
+                // Not a valid image
+                URL.revokeObjectURL(url);
+                resolve(false);
+            };
+
+            img.src = url;
+        });
+    } catch {
+        URL.revokeObjectURL(url);
+        return false;
+    }
+}
+
+
 export async function blobToTextIfPossible(blob: Blob, offset = 0, length?: number): Promise<string | null> {
     if (length === undefined) {
         length = Math.min(1024 * 1024, blob.size - offset);

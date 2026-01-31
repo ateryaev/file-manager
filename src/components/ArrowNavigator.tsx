@@ -5,9 +5,10 @@ interface ArrowNavigatorProps {
     variant?: "vertical" | "horizontal";
     children: React.ReactNode;
     autoFocus?: boolean;
+    inmodal?: boolean;
 }
 
-export function ArrowNavigator({ variant = "vertical", children, autoFocus = true }: ArrowNavigatorProps) {
+export function ArrowNavigator({ variant = "vertical", children, autoFocus = false, inmodal = true }: ArrowNavigatorProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const [hasFocus, setHasFocus] = useState(false);
 
@@ -44,7 +45,7 @@ export function ArrowNavigator({ variant = "vertical", children, autoFocus = tru
         ? { "ArrowDown": focusNext, "ArrowUp": focusPrevious }
         : { "ArrowRight": focusNext, "ArrowLeft": focusPrevious };
 
-    useKeyboard(hasFocus, keys);
+    useKeyboard(hasFocus ? keys : undefined, true, inmodal);
 
     useEffect(() => {
         const handleFocusChange = () => {

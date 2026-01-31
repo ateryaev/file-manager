@@ -1,20 +1,30 @@
 import { useEffect } from "react";
+import { modalState } from "../components/Modal";
 
-export function useKeyboard(active: boolean, handlers: { [key: string]: (e: KeyboardEvent) => void }) {
+export function useKeyboard(
+    handlers?: { [key: string]: (e: KeyboardEvent) => void },
+    enabled: boolean = true,
+    modal: boolean = false) {
     useEffect(() => {
-        if (!active) return;
+        if (!handlers) return;
+
+
         const handleKeyDown = (e: KeyboardEvent) => {
-            const handler = handlers[e.key];
-            if (handler) {
-                handler(e);
-                e.preventDefault();
-            }
             // preventDefault for all F keys to avoid browser defaults
             if (e.key.startsWith("F") && !isNaN(Number(e.key.substring(1)))) {
                 e.preventDefault();
             }
+
+            if (!modal && modalState.isOpen()) return;
+            const handler = handlers[e.key];
+            if (handler && enabled) {
+                handler(e);
+                e.preventDefault();
+            }
+
         };
+
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [active, handlers]);
+    }, [handlers, enabled, modal]);
 }

@@ -5,6 +5,7 @@ import { RAMDrive } from './vfs/RAMDrive'
 import { VFS } from './vfs/vfs'
 import ViewAsHex from './pages/ViewAsHex'
 import ViewAsImage from './pages/ViewAsImage'
+import { PanesContextProvider } from './components/pane/PaneContext'
 
 
 // TODO: implement routing instead of page state
@@ -45,11 +46,11 @@ export default function App() {
   }
 
   return (
-    <>
+    <PanesContextProvider>
       {currentPage === 'files' && <Files onExecute={handleExecute} onViewAs={handleViewAs} />}
       {currentPage === 'viewastxt' && <ViewAsTxt filePath={viewFilePath} onBack={handleBack} />}
       {currentPage === 'viewashex' && <ViewAsHex filePath={viewFilePath} onBack={handleBack} />}
       {currentPage === 'viewasimage' && <ViewAsImage filePath={viewFilePath} onBack={handleBack} />}
-    </>
+    </PanesContextProvider>
   )
 }
