@@ -1,4 +1,4 @@
-//location is DRIVE://PATH/TO/FILE
+//location is DRIVE:/PATH/TO/FILE
 
 function getDrive(location: string): string {
     const parts = location.split(":/");
@@ -30,10 +30,7 @@ function goDeepLocation(location: string, name: string): string {
 }
 
 function clampLocation(location: string): string {
-    // Remove redundant slashes, resolve "." and ".."
-    const drive = getDrive(location);
-    let path = getPath(location);
-    const parts = path.split("/").filter(Boolean);
+    const parts = location.split("/").filter(Boolean);
     const stack: string[] = [];
     for (const part of parts) {
         if (part === ".") continue;
@@ -43,7 +40,21 @@ function clampLocation(location: string): string {
             stack.push(part);
         }
     }
-    return `${drive}://${stack.join("/")}`;
+    return stack.join("/");
+    // Remove redundant slashes, resolve "." and ".."
+    // const drive = getDrive(location);
+    // let path = getPath(location);
+    // const parts = path.split("/").filter(Boolean);
+    // const stack: string[] = [];
+    // for (const part of parts) {
+    //     if (part === ".") continue;
+    //     if (part === "..") {
+    //         stack.pop();
+    //     } else {
+    //         stack.push(part);
+    //     }
+    // }
+    // return `${drive}:/${stack.join("/")}`;
 }
 
 

@@ -22,6 +22,8 @@ export const Pane = memo(function FilePane({ ...props }: {
 
             {fileInfo?.kind === "directory" && <PaneFileList />}
             {fileInfo?.kind === "file" && <ViewTextFile />}
+
+            {fileInfo?.kind === "root" && <PaneFileList />}
             {fileInfo === null && <CardContent>Loading...</CardContent>}
 
         </Card>

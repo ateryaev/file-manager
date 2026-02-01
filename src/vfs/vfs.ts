@@ -4,7 +4,8 @@ import { sleep } from "../libs/utils";
 
 export type FileEntry = {
     name: string;
-    kind: "file" | "directory";
+    kind: "file" | "directory" | "drive" | "root";
+    description?: string;
     size?: number;
     lastModified?: number;
 };
@@ -30,12 +31,14 @@ function fileSort(a: FileEntry, b: FileEntry) {
 
 export class VFS {
     private static drives: Record<string, IDrive> = {};
+    private static driveDescriptions: Record<string, string> = {};
     private static bus = new EventTarget();
     private static CHANGE_EVENT = "vfs_change";
 
     // --- Registration ---
-    static registerDrive(label: string, drive: IDrive) {
+    static registerDrive(label: string, drive: IDrive, description?: string) {
         this.drives[label] = drive;
+        this.driveDescriptions[label] = description || "";
         // this.notify(drive);
     }
 
@@ -46,20 +49,33 @@ export class VFS {
     }
 
     static async info(location: string): Promise<FileEntry> {
-        const [label, path] = location.split(":/");
+        if (!location) return {
+            name: "root",
+            kind: "root",
+            description: "Web File Manager Drives List"
+        }
+        const [label, path] = location.split(":");
+
         const drive = this.getDrive(label);
         return await drive.info(path);
     }
 
     static async ls(location: string): Promise<FileEntry[]> {
-        const [label, path] = location.split(":/");
+        if (!location) {
+            const items: FileEntry[] = [];
+            for (const label of this.getAllLabels()) {
+                items.push({ name: `${label}:`, kind: "drive", description: this.driveDescriptions[label] });
+            }
+            return items;
+        }
+        const [label, path] = location.split(":");
         const drive = this.getDrive(label);
         console.log(`VFS.ls called on drive: ${label}, path: ${path}`);
         //await sleep(500); // Simulate latency
         let items = await drive.ls(path);
-        if (path !== "/") {
-            items.push({ name: "..", kind: "directory" });
-        }
+        //if (path !== "/") {
+        items.push({ name: "..", kind: "directory" });
+        //}
         items.sort(fileSort);
         return items;
     }

@@ -48,7 +48,7 @@ export function PaneContextProvider({ children }: { children: React.ReactNode })
         setActivePane(id);
     }, [setActivePane]);
 
-    const [location, setLocation] = useState<string>("RAM://");
+    const [location, setLocation] = useState<string>("RAM:");
     const [fileInfo, setFileInfo] = useState<FileEntry | null>(null);
     const [files, setFiles] = useState<FileEntry[] | null>(null);
     const [fileBlob, setFileBlob] = useState<Blob | null>(null);
@@ -97,7 +97,7 @@ export function PaneContextProvider({ children }: { children: React.ReactNode })
 
         async function load() {
             const fileInfo = await VFS.info(location);
-            if (fileInfo.kind === "directory") {
+            if (fileInfo.kind !== "files") {
                 const files = await VFS.ls(location);
                 setFiles(files);
             }

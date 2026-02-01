@@ -1,7 +1,7 @@
 import { memo, useEffect, useRef } from "react";
 import { FileEntry } from "../../vfs/vfs";
 import { cn, formatBytes, formatDate, formatTime } from "../../libs/utils";
-import { IconFile, IconFolderFilled, IconFolderUp } from "@tabler/icons-react";
+import { IconDeviceFloppy, IconFile, IconFolderFilled, IconFolderUp } from "@tabler/icons-react";
 import { Counter } from "../RenderCounter";
 
 export const PaneFileListItem = memo(function PaneFileListItem({ onExecute, onSelect, file, selected = false, className }:
@@ -20,10 +20,11 @@ export const PaneFileListItem = memo(function PaneFileListItem({ onExecute, onSe
     const size = file.kind === "file" ? `${formatBytes(file.size || 0)}` :
         file.name === ".." ? "Up" : "Folder";
     const iconsize = "1em";
-    let icon = file.kind === "directory" ?
+    let icon = file.kind !== "file" ?
         <IconFolderFilled size={iconsize} className="text-yellow-400 shrink-0" /> :
         <IconFile size={iconsize} opacity={0.2} className="shrink-0" />;
     if (file.name === "..") icon = <IconFolderUp size={iconsize} className="text-yellow-400 shrink-0" />;
+    if (file.kind === "drive") icon = <IconDeviceFloppy size={iconsize} className="text-blue-700 shrink-0" />
 
     return (
         <div className={cn(
