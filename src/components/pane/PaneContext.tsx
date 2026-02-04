@@ -99,6 +99,9 @@ export function PaneContextProvider({ children }: { children: React.ReactNode })
             const fileInfo = await VFS.info(location);
             if (fileInfo.kind !== "files") {
                 const files = await VFS.ls(location);
+                if (fileInfo.kind === "directory") {
+                    files[0].lastModified = fileInfo.lastModified;
+                }
                 setFiles(files);
             }
             if (fileInfo.kind === "file") {

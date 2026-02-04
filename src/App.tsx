@@ -6,6 +6,7 @@ import { VFS } from './vfs/vfs'
 import ViewAsHex from './pages/ViewAsHex'
 import ViewAsImage from './pages/ViewAsImage'
 import { PanesContextProvider } from './components/pane/PaneContext'
+import { ROMDrive } from './vfs/ROMDrive'
 
 
 // TODO: implement routing instead of page state
@@ -16,6 +17,7 @@ import { PanesContextProvider } from './components/pane/PaneContext'
 type Page = 'files' | 'viewastxt' | 'viewashex' | 'viewasimage'
 
 VFS.registerDrive("RAM", new RAMDrive());
+VFS.registerDrive("ROM", new ROMDrive());
 
 
 

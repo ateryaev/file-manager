@@ -63,7 +63,7 @@ export class DropDrive implements IDrive {
                     name,
                     kind: 'directory',
                     size: 0,
-                    lastModified: Date.now()
+                    //lastModified: Date.now()
                 });
             }
         }

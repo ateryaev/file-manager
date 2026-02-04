@@ -48,14 +48,14 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
         <Card className=' shrink-0'>
             <CardContent className="justify-between">
                 <FButton fkey="F1" >Help</FButton>
-                <FButton fkey="F2" disabled>Settings</FButton>
-                <FButton fkey="F3" onClick={() => onAction?.('view')}>View...</FButton>
+                <FButton fkey="F2" disabled>Rename</FButton>
+                <FButton fkey="F3" onClick={() => onAction?.('view')}>View</FButton>
                 <FButton fkey="F4" disabled>Edit</FButton>
                 <FButton fkey="F5" disabled>Copy</FButton>
-                <FButton fkey="F6" disabled>RenMove</FButton>
+                <FButton fkey="F6" disabled>Move</FButton>
                 <FButton fkey="F7" onClick={() => onAction?.('mkdir')}>Mkdir</FButton>
                 <FButton fkey="F8" disabled>Delete</FButton>
-                <FButton fkey="F9" disabled>Menu</FButton>
+                <FButton fkey="F9" disabled>Expand</FButton>
                 <FButton fkey="F10" disabled>Drives</FButton>
             </CardContent>
         </Card>

@@ -13,9 +13,9 @@ export type FileEntry = {
 export interface IDrive {
     ls(path: string): Promise<FileEntry[]>;
     read(path: string): Promise<Blob>;
-    write(path: string, data: Blob): Promise<void>;
-    rm(path: string): Promise<void>;
-    mkdir(path: string): Promise<void>;
+    write?(path: string, data: Blob): Promise<void>;
+    rm?(path: string): Promise<void>;
+    mkdir?(path: string): Promise<void>;
     info(path: string): Promise<FileEntry>;
 }
 
@@ -38,7 +38,7 @@ export class VFS {
     // --- Registration ---
     static registerDrive(label: string, drive: IDrive, description?: string) {
         this.drives[label] = drive;
-        this.driveDescriptions[label] = description || "";
+        this.driveDescriptions[label] = description || "Drive";
         // this.notify(drive);
     }
 
@@ -55,6 +55,13 @@ export class VFS {
             description: "Web File Manager Drives List"
         }
         const [label, path] = location.split(":");
+        if (path === "") {
+            return {
+                name: "root",
+                kind: "drive",
+                description: "Drive's root directory"
+            }
+        }
 
         const drive = this.getDrive(label);
         return await drive.info(path);
@@ -81,22 +88,23 @@ export class VFS {
     }
 
     static async mkdir(location: string, name: string): Promise<void> {
-        const [label, path] = location.split(":/");
+        const [label, path] = location.split(":");
+        console.log(`VFS.mkdir called on drive: ${label}, path: ${path}, location: ${location}`);
         const drive = this.getDrive(label);
         const newPath = path === "/" ? `/${name}` : `${path}/${name}`;
-        await drive.mkdir(newPath);
+        drive.mkdir && await drive.mkdir(newPath);
         this.notify(location);
     }
     static async rm(location: string, name: string): Promise<void> {
-        const [label, path] = location.split(":/");
+        const [label, path] = location.split(":");
         const drive = this.getDrive(label);
         const newPath = path === "/" ? `/${name}` : `${path}/${name}`;
-        await drive.rm(newPath);
+        drive.rm && await drive.rm(newPath);
         this.notify(location);
     }
 
     static async read(location: string): Promise<Blob> {
-        const [label, path] = location.split(":/");
+        const [label, path] = location.split(":");
         const drive = this.getDrive(label);
         return await drive.read(path);
     }

@@ -1,7 +1,7 @@
 import { useEffect, useRef, memo, useCallback, useState, use, createContext, useContext } from "react";
 import { Card, CardContent, CardHeader } from "./ui/Card";
 import { cn } from "../libs/utils";
-import { IconHome, IconHome2, IconHomeFilled, IconServer } from "@tabler/icons-react";
+import { IconDeviceFloppy, IconDisc, IconHome, IconHome2, IconHomeFilled, IconServer } from "@tabler/icons-react";
 import { PaneFileList } from "./pane/PaneFileList";
 import { Counter } from "./RenderCounter";
 
@@ -16,15 +16,21 @@ export const Pane = memo(function FilePane({ ...props }: {
 
     return (
         <Card onMouseDown={activate} className={cn('flex-1')} variant={active ? 'ready' : 'blur'} {...props} >
-            <CardHeader label={(<IconHome size={18} />)} className="">
-                {location}<Counter />
+            <CardHeader className={cn("text-blue-600")}>
+                <div className={cn(location ? "" : "text-center w-full text-blue-600")}>
+                    {location || "Drives Pane"}
+
+                </div>
+
+                <Counter />
             </CardHeader>
 
             {fileInfo?.kind === "directory" && <PaneFileList />}
             {fileInfo?.kind === "file" && <ViewTextFile />}
 
+            {fileInfo?.kind === "drive" && <PaneFileList />}
             {fileInfo?.kind === "root" && <PaneFileList />}
-            {fileInfo === null && <CardContent>Loading...</CardContent>}
+            {fileInfo === null && <CardContent className="px-3 py-1 text-gray-500">Loading...</CardContent>}
 
         </Card>
     );

@@ -169,7 +169,7 @@ Remember: This is temporary storage. Always save important work to persistent st
         },
     }
 };
-
+const now = Date.now();
 // services/drives/RAMDrive.ts
 export class RAMDrive implements IDrive {
     //label = "RAM:";
@@ -197,7 +197,7 @@ export class RAMDrive implements IDrive {
             name,
             kind: data.type === 'dir' ? 'directory' : 'file',
             size: data.content?.size || 0,
-            lastModified: Date.now()
+            lastModified: data.type === 'dir' ? undefined : now
         }));
     }
 
@@ -247,7 +247,7 @@ export class RAMDrive implements IDrive {
                 name,
                 kind: 'directory',
                 size: 0,
-                lastModified: Date.now()
+                //lastModified: Date.now()
             };
         }
     }

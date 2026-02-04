@@ -49,7 +49,7 @@ export function ViewTextFile({ }) {
     });
     return (
         <>
-            <CardContent ref={scrollRef} className='whitespace-pre'>
+            <CardContent ref={scrollRef} className='whitespace-pre px-3 py-1'>
                 {text}
             </CardContent>
             <CardHeader>
