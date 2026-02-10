@@ -5,7 +5,7 @@ import { RAMDrive } from './vfs/RAMDrive'
 import { VFS } from './vfs/vfs'
 import ViewAsHex from './pages/ViewAsHex'
 import ViewAsImage from './pages/ViewAsImage'
-import { PanesContextProvider } from './components/pane/PaneContext'
+import { PanesContextProvider } from './components/pane/Contexts'
 import { ROMDrive } from './vfs/ROMDrive'
 
 
@@ -16,8 +16,10 @@ import { ROMDrive } from './vfs/ROMDrive'
 
 type Page = 'files' | 'viewastxt' | 'viewashex' | 'viewasimage'
 
-VFS.registerDrive("RAM", new RAMDrive());
-VFS.registerDrive("ROM", new ROMDrive());
+
+VFS.registerDrive("RAM", new RAMDrive(), "Temporal drive, will be reset on restart");
+VFS.registerDrive("ROM", new ROMDrive(), "Readonly drive for permanent files");
+
 
 
 

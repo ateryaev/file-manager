@@ -1,26 +1,27 @@
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { CardContent, CardHeader } from "../ui/Card";
 import { blobToTextIfPossible } from "../../libs/utils";
-import { PaneContext, usePaneKeyboard } from "./PaneContext";
-import { clampLocation } from "../../libs/location";
+import { usePaneKeyboard } from "./Hooks";
 
-export function ViewTextFile({ }) {
-    const { location, setLocation, fileInfo, fileBlob } = useContext(PaneContext);
-    const [text, setText] = useState<string>('Loading...');
+export function PaneViewText({ blob, onExit }: { blob?: Blob, onExit?: () => void }) {
+    //const { location, parent } = useContext(PaneContext);
+
+
+    const [text, setText] = useState<string>('Processing...');
     const scrollRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-        if (fileBlob === null) return;
+        if (!blob) return;
         async function loadText() {
-            const text = await blobToTextIfPossible(fileBlob);
+            const text = await blobToTextIfPossible(blob);
             setText(text ?? 'Error loading text');
         }
         loadText();
-    }, [location, fileInfo, fileBlob]);
+    }, [blob]);
 
     usePaneKeyboard({
         Escape: () => {
             console.log("NAVIGATE:", location);
-            setLocation(clampLocation(`${location}/..`));
+            onExit?.();
         },
         ArrowUp: () => {
             scrollRef.current?.scrollTo({ top: scrollRef.current?.scrollTop - 10, behavior: 'smooth' });
@@ -53,7 +54,7 @@ export function ViewTextFile({ }) {
                 {text}
             </CardContent>
             <CardHeader>
-                {`${fileInfo?.lastModified?.toLocaleString()} ${fileInfo?.size} bytes`}
+                {`${blob?.size} bytes`}
             </CardHeader>
         </>
     )

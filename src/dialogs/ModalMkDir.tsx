@@ -4,7 +4,7 @@ import { Button } from "../components/ui/Button";
 import { cn } from "../libs/utils";
 import { Card, CardContent } from "../components/ui/Card";
 import { ArrowNavigator } from "../components/ArrowNavigator";
-import { PaneContext, PanesContext } from "../components/pane/PaneContext";
+import { PaneContext, PanesContext } from "../components/pane/Contexts";
 
 function validateFolderName(name: string): boolean {
     name = name.trim();

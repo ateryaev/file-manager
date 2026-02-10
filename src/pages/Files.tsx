@@ -1,5 +1,5 @@
 import { use, useCallback, useContext, useEffect, useState } from 'react'
-import { Pane } from '../components/Pane'
+import { Pane } from '../components/pane/Pane'
 import { ModalMkDir } from '../dialogs/ModalMkDir'
 import { Footer } from '../components/Footer'
 import { useKeyboard } from '../hooks/useKeyboard'
@@ -10,7 +10,7 @@ import { ViewAsDialog } from '../dialogs/ViewAsDialog'
 import { usePaneStore } from '../hooks/usePaneStore'
 import { modalManager } from '../libs/modalManager'
 import { modalState } from '../components/Modal'
-import { PaneContextProvider, PanesContext, PanesContextProvider } from '../components/pane/PaneContext'
+import { PaneContextProvider, PanesContext, PanesContextProvider } from '../components/pane/Contexts'
 
 interface FilesProps {
     onExecute: (location: string) => void;
@@ -20,7 +20,7 @@ interface FilesProps {
 export default function Files({ onExecute, onViewAs }: FilesProps) {
     console.log("Rendering FILES page");
 
-    const { activePane, setActivePane } = useContext(PanesContext);
+    const { activeSide, setActiveSide } = useContext(PanesContext);
 
     // const setFocusedPane = useCommanderStore(s => s.setFocused);
     // const focusedPane = useCommanderStore(s => s.focusedPane);
@@ -35,7 +35,7 @@ export default function Files({ onExecute, onViewAs }: FilesProps) {
     useKeyboard({
         Tab: (e) => {
             e.preventDefault();
-            setActivePane((activePane + 1) % 2);
+            setActiveSide((activeSide === "left" ? "right" : "left"));
         },
 
         // F3: async (e) => {
@@ -91,10 +91,10 @@ export default function Files({ onExecute, onViewAs }: FilesProps) {
 
             <div className='flex-1 flex flex-row gap-2 shrink-0xx overflow-hidden'>
 
-                <PaneContextProvider>
+                <PaneContextProvider side="left">
                     <Pane />
                 </PaneContextProvider>
-                <PaneContextProvider>
+                <PaneContextProvider side="right">
                     <Pane />
                 </PaneContextProvider>
 

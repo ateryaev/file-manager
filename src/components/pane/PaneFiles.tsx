@@ -1,26 +1,27 @@
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { FileEntry, VFS } from "../../vfs/vfs";
-import { CardContent } from "../ui/Card";
+import { CardContent, CardHeader } from "../ui/Card";
 import { Counter } from "../RenderCounter";
-import { PaneContext, usePaneKeyboard } from "./PaneContext";
+import { PaneContext } from "./Contexts";
+import { usePaneHistory, usePaneKeyboard } from "./Hooks";
 import { clampLocation } from "../../libs/location";
-import { PaneFileListItem } from "./FileListItem";
+import { PaneFileListItem } from "./PaneFilesItem";
 import { modalManager } from "../../libs/modalManager";
 import { ModalMkDir } from "../../dialogs/ModalMkDir";
 import { ModalConfirm } from "../../dialogs/ModalConfirm";
 import { DropDrive } from "../../vfs/DropDrive";
 
-const PaneFileListItems = memo(({ files, cursor, setCursor, handleExecute }:
-    { files: FileEntry[], cursor: string, setCursor: (name: string) => void, handleExecute: (name: string) => void }) => {
+const PaneFilesList = memo(({ files, cursor, handleSelect, handleExecute }:
+    { files?: FileEntry[], cursor: string, handleSelect: (file: FileEntry) => void, handleExecute: (file: FileEntry) => void }) => {
     return (
         <>
             <Counter />
-            {files.map((file) => (
+            {files?.map((file) => (
                 <PaneFileListItem
                     key={file.name}
                     file={file}
                     selected={file.name === cursor}
-                    onSelect={setCursor}
+                    onSelect={handleSelect}
                     onExecute={handleExecute}
                 />
             ))}
@@ -28,25 +29,37 @@ const PaneFileListItems = memo(({ files, cursor, setCursor, handleExecute }:
     );
 });
 
-export const PaneFileList = memo(function PaneFileList() {
+export const PaneFiles = memo(({ files, onExecute, onSelect }:
+    { files?: FileEntry[], onExecute?: (file: FileEntry) => void, onSelect?: (file?: FileEntry) => void }) => {
     console.log("Rendering PANE FILE LIST");
-    const { location, setLocation, setHistory, getHistory, files } = useContext(PaneContext);
+    //const { setHistory, getHistory } = useContext(PaneContext);
+
+    const { setHistory, getHistory } = usePaneHistory();
 
     const scrollRef = useRef<HTMLDivElement>(null);
     const [cursor, setCursor] = useState<string | undefined>(undefined);
 
     useEffect(() => {
-        if (files.length === 0) return;
+        onSelect?.(files?.find(file => file.name === cursor) || files?.[0]);
+    }, [cursor, files, onSelect]);
+
+    useEffect(() => {
+        if (!files) return;
         //console.log("getHistory:", location, getHistory(), files.length);
         setCursor(getHistory().cursor || files[0]?.name);
         scrollRef.current && (scrollRef.current.scrollTop = getHistory().scroll || 0);
     }, [files, getHistory]);
 
-    const handleExecute = useCallback((name: string, historyUpdate = true) => {
-        console.log("SET HISTORY 2:", location, name);
-        if (historyUpdate) setHistory({ cursor: name, scroll: scrollRef.current?.scrollTop || 0 });
-        setLocation(clampLocation(`${location}/${name}`));
-    }, [location, setLocation, setHistory]);
+    const handleExecute = useCallback((file: FileEntry, historyUpdate = true) => {
+        if (historyUpdate) setHistory({ cursor: file.name, scroll: scrollRef.current?.scrollTop || 0 });
+        //navigate(clampLocation(`${location}/${file.name}`), file.kind === "file" ? "view-as-text" : "files");
+        onExecute?.(file);
+    }, [onExecute]);
+
+    const handleSelect = useCallback((file: FileEntry) => {
+        setCursor(file.name);
+        //setHistory({ cursor: file.name, scroll: scrollRef.current?.scrollTop || 0 });
+    }, [setCursor]);
 
     const moveCursor = useCallback((delta: number) => {
         const cursorIndex = files.findIndex(file => file.name === cursor);
@@ -71,14 +84,14 @@ export const PaneFileList = memo(function PaneFileList() {
         ArrowRight: () => {
             moveCursor(files.length - 1);
         },
-        F7: async (e) => {
+        // F7: async (e) => {
 
-            const folderName = await modalManager.show<string | null>(ModalMkDir, { defaultValue: "new folder 1" });
-            if (folderName) {
-                await VFS.mkdir(location, folderName);
-                setHistory({ cursor: folderName, scroll: scrollRef.current?.scrollTop || 0 });
-            }
-        },
+        //     const folderName = await modalManager.show<string | null>(ModalMkDir, { defaultValue: "new folder 1" });
+        //     if (folderName) {
+        //         await VFS.mkdir(location, folderName);
+        //         setHistory({ cursor: folderName, scroll: scrollRef.current?.scrollTop || 0 });
+        //     }
+        // },
         F8: async (e) => {
             if (!cursor) return;
             const todelete = await modalManager.show<boolean, { message: string }>(ModalConfirm, { message: `Are you sure to delete ${location}/${cursor}?` });
@@ -90,25 +103,29 @@ export const PaneFileList = memo(function PaneFileList() {
         },
         F10: (e) => {
             window.showDirectoryPicker({ startIn: 'desktop', mode: 'readwrite' }).then(async (handle: FileSystemDirectoryHandle) => {
-                VFS.registerDrive(handle.name, new DropDrive(handle));
-                setLocation(clampLocation(`${handle.name}://`));
+                VFS.registerDrive("DROP", new DropDrive(handle), `User's ${handle.name} folder`);
+                //setLocation(clampLocation(`${handle.name}://`));
+                navigate(clampLocation(`DROP:`));
                 //setHistory({ cursor: "", scroll: scrollRef.current?.scrollTop || 0 });
             });
         },
         Escape: () => {
             // setLocation(clampLocation(`${location}/..`));
-            handleExecute("..", false);
+            handleExecute(files[0], false);
         },
         Enter: () => {
             const file = files.find(file => file.name === cursor) || files[0];
-            handleExecute(file.name);
+            handleExecute(file);
         }
     });
 
     return (
-        <CardContent ref={scrollRef} className='flex flex-col gap-0 cursor-default '>
-            <PaneFileListItems files={files} cursor={cursor || ""}
-                setCursor={setCursor} handleExecute={handleExecute} />
-        </CardContent>
+        <>
+            <CardContent ref={scrollRef} className='flex flex-col gap-0 cursor-default '>
+                <PaneFilesList files={files} cursor={cursor || ""}
+                    handleSelect={handleSelect} handleExecute={handleExecute} />
+            </CardContent>
+
+        </>
     );
 });

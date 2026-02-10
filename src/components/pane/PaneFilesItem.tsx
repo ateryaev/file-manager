@@ -6,8 +6,8 @@ import { Counter } from "../RenderCounter";
 
 export const PaneFileListItem = memo(function PaneFileListItem({ onExecute, onSelect, file, selected = false, className }:
     {
-        onSelect?: (name: string) => void,
-        onExecute?: (name: string) => void,
+        onSelect?: (file: FileEntry) => void,
+        onExecute?: (file: FileEntry) => void,
         file: FileEntry,
         selected?: boolean,
         className?: string
@@ -35,8 +35,8 @@ export const PaneFileListItem = memo(function PaneFileListItem({ onExecute, onSe
             "@container px-2 py-1 flex flex-between items-center select-none gap-2 hover:opacity-80 overflow-hidden shrink-0",
             "starting:opacity-0 transition-opacity duration-150",
             selected && "bg-blue-300 text-white", className)}
-            onMouseDown={() => onSelect?.(file.name)}
-            onDoubleClick={() => onExecute?.(file.name)}
+            onMouseDown={() => onSelect?.(file)}
+            onDoubleClick={() => onExecute?.(file)}
             ref={selected ? selectedRef : null}>
 
             {icon && <div className="hidden @[100px]:block">{icon}</div>}
