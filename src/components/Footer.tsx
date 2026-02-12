@@ -1,10 +1,12 @@
-import { useContext } from "react";
+import { useCallback, useContext } from "react";
 import { PanesContext } from "./pane/Contexts";
 import { Button } from "./ui/Button";
 import { Card, CardContent } from "./ui/Card";
 import { modalManager } from "../libs/modalManager";
 import { ModalMkDir } from "../dialogs/ModalMkDir";
 import { VFS } from "../vfs/vfs";
+import { useKeyboard } from "./pane/Hooks";
+import { resume } from "react-dom/server";
 
 function FButton({ fkey, ...props }: {
     fkey: string;
@@ -80,13 +82,19 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
             updatePane(activeSide, { location, mode: "view" });
         }
 
-        async function handleMkdir() {
-            const folderName = await modalManager.show<string | null>(ModalMkDir, { defaultValue: "new folder 1" });
-            if (folderName) {
-                await VFS.mkdir(activePane.location, folderName);
-                //setHistory({ cursor: folderName, scroll: scrollRef.current?.scrollTop || 0 });
+        const handleMkdir = useCallback(async () => {
+            await modalManager.show<string | null>(ModalMkDir,
+                {
+                    defaultValue: "new folder 1",
+                    context: { panes, activeSide, updatePane }
+                });
+        }, [activePane.location, activeSide, updatePane]);
+
+        useKeyboard({
+            F7: () => {
+                handleMkdir();
             }
-        }
+        });
 
         return (
             <Card className='shrink-0' variant={"ready"}>

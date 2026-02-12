@@ -2,12 +2,12 @@ import { useRef, useEffect, useState } from 'react';
 import { Card, CardContent } from './ui/Card';
 import { FocusTrap } from 'focus-trap-react';
 
-let modalCount = 0;
-export const modalState = {
-    increment: () => { modalCount++; },
-    decrement: () => { modalCount = Math.max(0, modalCount - 1); },
-    isOpen: () => modalCount > 0
-};
+// let modalCount = 0;
+// export const modalState = {
+//     increment: () => { modalCount++; },
+//     decrement: () => { console.log("MODAL CLOSE", modalCount); setTimeout(() => { modalCount = Math.max(0, modalCount - 1); }, 1000); },
+//     isOpen: () => modalCount > 0
+// };
 
 export function Modal({ open, children, onClose }: { open: boolean, children: React.ReactNode, onClose?: () => void }) {
     const dialogRef = useRef<HTMLDialogElement>(null);
@@ -16,11 +16,9 @@ export function Modal({ open, children, onClose }: { open: boolean, children: Re
     useEffect(() => { setActive(open); }, [open]);
 
     useEffect(() => {
-        console.log("MODAL COUNT:", modalCount);
+
         if (open) {
             dialogRef.current?.showModal();
-            modalState.increment();
-            return () => modalState.decrement();
         }
     }, [open]);
 
@@ -29,6 +27,7 @@ export function Modal({ open, children, onClose }: { open: boolean, children: Re
         if (!dialog) return;
 
         const handleCancel = (e: Event) => {
+            if ((e as KeyboardEvent).key && (e as KeyboardEvent).key !== 'Escape') return;
             e.preventDefault();
             onClose?.();
         };
@@ -40,9 +39,11 @@ export function Modal({ open, children, onClose }: { open: boolean, children: Re
         };
 
         dialog.addEventListener('cancel', handleCancel);
+        dialog.addEventListener('keydown', handleCancel);
         document.addEventListener('mousedown', handleBackdropClick);
         return () => {
             dialog.removeEventListener('cancel', handleCancel);
+            dialog.removeEventListener('keydown', handleCancel);
             document.removeEventListener('mousedown', handleBackdropClick);
         };
     }, [onClose, open]);

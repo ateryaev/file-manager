@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { modalState } from "../components/Modal";
+//import { modalState } from "../components/Modal";
 
 export function useKeyboard(
     handlers?: { [key: string]: (e: KeyboardEvent) => void },
@@ -10,12 +10,9 @@ export function useKeyboard(
 
 
         const handleKeyDown = (e: KeyboardEvent) => {
-            // preventDefault for all F keys to avoid browser defaults
-            if (e.key.startsWith("F") && !isNaN(Number(e.key.substring(1)))) {
-                e.preventDefault();
-            }
 
-            if (!modal && modalState.isOpen()) return;
+            //if (!modal && modalState.isOpen()) return;
+
             const handler = handlers[e.key];
             if (handler && enabled) {
                 handler(e);

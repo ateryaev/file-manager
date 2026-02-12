@@ -7,9 +7,9 @@ export function Card({ variant, className, children, ...props }: React.Component
 
     return (
         <CardContext.Provider value={{ variant }}>
-            <div className={cn('bg-gray-200 p-2 flex flex-col gap-2 overflow-hidden',
+            <div className={cn('bg-gray-200 p-2 flex flex-col gap-2 overflow-hidden transition-colors',
                 variant === 'blur' && 'bg-blue-200 saturate-0 opacity-70 group blurcard',
-                variant === 'ready' && 'bg-blue-300 group readycard',
+                variant === 'ready' && 'in-[.window-active]:bg-blue-300 group readycard',
                 variant === 'loading' && 'bg-blue-300 group loadingcard',
                 variant === 'error' && 'bg-red-300 group errorcard',
                 className)} {...props}>

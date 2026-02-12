@@ -13,7 +13,7 @@ import { FileEntry } from "../../vfs/vfs";
 export const Pane = memo(function FilePane({ ...props }: {
 } & React.ComponentProps<"div">) {
 
-    const { isActive, location, parent, activate, files, blob, navigate, update, selection } = useContext(PaneContext);
+    const { isActive, location, activate, files, blob, navigate, selection } = useContext(PaneContext);
     //console.log("Rendering PANE", location, files);
     const loading = !files && !blob;
 
@@ -21,10 +21,6 @@ export const Pane = memo(function FilePane({ ...props }: {
         navigate(clampLocation(`${location}/${file.name}`), file.kind === "file" ? "view" : "files");
     }, [navigate, location]);
 
-    const handleSelect = useCallback((file?: FileEntry) => {
-        console.log("SELECT:", location, file?.name);
-        update({ selection: file });
-    }, [update, location]);
 
     return (
         <Card onMouseDown={activate} className={cn('flex-1')} variant={isActive ? 'ready' : 'blur'} {...props} >
@@ -35,7 +31,7 @@ export const Pane = memo(function FilePane({ ...props }: {
                 <Counter />
             </CardHeader>
 
-            {!loading && files && <PaneFiles files={files} onExecute={handleNavigate} onSelect={handleSelect} />}
+            {!loading && files && <PaneFiles files={files} onExecute={handleNavigate} />}
             {!loading && blob && <PaneViewText blob={blob} onExit={() => navigate(clampLocation(`${location}/..`))} />}
 
             {/* {parent?.kind === "directory" && <PaneFileList files={files} onExecute={navigate} />}
@@ -45,7 +41,7 @@ export const Pane = memo(function FilePane({ ...props }: {
             {parent?.kind === "root" && <PaneFileList />}*/}
 
             {loading && <CardContent className="px-3 py-1 text-gray-500">Loading...</CardContent>}
-            {selection && <CardHeader>
+            {selection && <CardHeader className="shrink-0">
                 {selection.name}
             </CardHeader>}
         </Card>

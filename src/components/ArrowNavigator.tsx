@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useKeyboard } from "../hooks/useKeyboard";
+//import { useKeyboard } from "../components/pane/Hooks";
 
 interface ArrowNavigatorProps {
     variant?: "vertical" | "horizontal";

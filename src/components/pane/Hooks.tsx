@@ -15,6 +15,7 @@ export function usePaneHistory() {
     return { getHistory, setHistory };
 }
 
+
 export function usePaneKeyboard(handlers: Record<string, (e: KeyboardEvent) => void>) {
     const { isActive } = useContext(PaneContext);
 
@@ -31,4 +32,24 @@ export function usePaneKeyboard(handlers: Record<string, (e: KeyboardEvent) => v
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
     }, [isActive, handlers]);
+}
+
+
+
+
+export function useKeyboard(handlers: Record<string, (e: KeyboardEvent) => void>) {
+
+    useEffect(() => {
+
+        const onKeyDown = (e: KeyboardEvent) => {
+            if (modalManager.isShowing()) return;
+            const handler = handlers[e.key];
+            if (!handler) return;
+            handler(e);
+            e.preventDefault();
+        };
+
+        window.addEventListener("keydown", onKeyDown);
+        return () => window.removeEventListener("keydown", onKeyDown);
+    }, [handlers]);
 }

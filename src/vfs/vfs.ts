@@ -89,6 +89,7 @@ export class VFS {
 
     static async mkdir(location: string, name: string): Promise<void> {
         const [label, path] = location.split(":");
+        await sleep(500);
         console.log(`VFS.mkdir called on drive: ${label}, path: ${path}, location: ${location}`);
         const drive = this.getDrive(label);
         const newPath = path === "/" ? `/${name}` : `${path}/${name}`;

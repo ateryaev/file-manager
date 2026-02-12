@@ -5,6 +5,7 @@ import { cn } from "../libs/utils";
 import { Card, CardContent } from "../components/ui/Card";
 import { ArrowNavigator } from "../components/ArrowNavigator";
 import { PaneContext, PanesContext } from "../components/pane/Contexts";
+import { VFS } from "../vfs/vfs";
 
 function validateFolderName(name: string): boolean {
     name = name.trim();
@@ -17,24 +18,38 @@ function validateFolderName(name: string): boolean {
 // Update the component to accept a resolve/reject callback pattern
 interface ModalMkDirProps {
     defaultValue?: string;
+    context?: any; // You can replace 'any' with the actual type of your panes context
     onResolve: (folderName: string | null) => void;
 }
 
-export function ModalMkDir({ defaultValue = "", onResolve }: ModalMkDirProps) {
+export function ModalMkDir({ defaultValue = "", context, onResolve }: ModalMkDirProps) {
+    const { panes, activeSide, updatePane } = context;
+    const activePane = panes[activeSide];
+
     const [folderName, setFolderName] = useState(defaultValue);
     const isValid = validateFolderName(folderName);
+
+    const [busy, setBusy] = useState(false);
 
     useEffect(() => {
         setFolderName(defaultValue);
     }, [defaultValue]);
 
-    function handleCreateFolder(e: React.MouseEvent | React.KeyboardEvent) {
+    async function handleCreateFolder(e: React.MouseEvent | React.KeyboardEvent) {
+        setBusy(true);
+        console.log("ENTER IN MODAL:", folderName);
         e.preventDefault();
         if (!isValid) return;
+
+        await VFS.mkdir(activePane.location, folderName);
+        const files = await VFS.ls(activePane.location);
+        updatePane(activeSide, { cursor: folderName, files });
+        setBusy(false);
         onResolve(folderName.trim());
     }
 
     const handleCancel = () => {
+        if (busy) return;
         onResolve(null);
     };
 
@@ -48,6 +63,7 @@ export function ModalMkDir({ defaultValue = "", onResolve }: ModalMkDirProps) {
                     </div>
 
                     <input
+                        disabled={busy}
                         spellCheck={false}
                         type="text"
                         value={folderName}
@@ -59,8 +75,8 @@ export function ModalMkDir({ defaultValue = "", onResolve }: ModalMkDirProps) {
 
                     <ArrowNavigator variant="horizontal">
                         <div className='flex justify-center w-full gap-2 pt-2'>
-                            <Button outline onClick={handleCancel}>Cancel</Button>
-                            <Button disabled={!isValid} outline onClick={handleCreateFolder}>Create</Button>
+                            <Button disabled={busy} outline onClick={handleCancel}>Cancel</Button>
+                            <Button disabled={!isValid || busy} outline onClick={handleCreateFolder}>Create</Button>
                         </div>
                     </ArrowNavigator>
                 </CardContent>

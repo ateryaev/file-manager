@@ -23,7 +23,7 @@ class ModalManager {
             const handleResolve = (value: T) => {
                 resolve(value);
                 this.close(id);
-                this.showingCount--;
+                setTimeout(() => { this.showingCount-- });
             };
 
             root.render(createElement(Component, {
