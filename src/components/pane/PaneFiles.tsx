@@ -47,7 +47,7 @@ export const PaneFiles = memo(({ files, onExecute }:
     }, [files, getHistory]);
 
     const handleSelect = useCallback((file?: FileEntry) => {
-        update({ cursor: file?.name });
+        update({ cursor: file?.name, selection: file });
     }, [update]);
 
     const handleExecute = useCallback((file: FileEntry, historyUpdate = true) => {
@@ -63,7 +63,7 @@ export const PaneFiles = memo(({ files, onExecute }:
         if (newIndex < 0) newIndex = 0;
         if (newIndex >= files.length) newIndex = files.length - 1;
         const newCursor = files[newIndex]?.name || "";
-        update({ cursor: newCursor });
+        update({ cursor: newCursor, selection: files[newIndex] });
     }, [files, cursor, update, setHistory]);
 
     usePaneKeyboard({

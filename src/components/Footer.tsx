@@ -6,7 +6,7 @@ import { modalManager } from "../libs/modalManager";
 import { ModalMkDir } from "../dialogs/ModalMkDir";
 import { VFS } from "../vfs/vfs";
 import { useKeyboard } from "./pane/Hooks";
-import { resume } from "react-dom/server";
+import { DropDrive } from "../vfs/DropDrive";
 
 function FButton({ fkey, ...props }: {
     fkey: string;
@@ -52,14 +52,73 @@ export function AnyFooter({ actions, onAction }: { actions: Record<string, strin
     )
 }
 
+const filesLabels = ["Help", "Rename", "View", "Edit", "Copy", "Move", "Mkdir", "Delete", "Resize", "Drives"];
+const viewLabels = ["Help", "", "", "", "", "", "Search", "", "Resize", "Exit"];
+const editLabels = ["Help", "Save", "", "", "", "", "Search", "", "Resize", "Exit"];
+const noLabels = ["", "", "", "", "", "", "", "", "", ""];
+
 export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "delete") => void }) {
-    const { panes, activeSide, updatePane } = useContext(PanesContext);
+    const { panes, activeSide, updatePane, setActiveSide } = useContext(PanesContext);
     const activePane = panes[activeSide];
     const hasSelection = !!activePane.selection;
     const targetPane = panes[activeSide === "left" ? "right" : "left"];
 
     const mode = activePane.mode;
     const targetMode = targetPane.mode;
+
+    const handleMkdir = useCallback(async () => {
+        await modalManager.show<string | null>(ModalMkDir,
+            {
+                defaultValue: "new folder 1",
+                context: { panes, activeSide, updatePane }
+            });
+    }, [activePane.location, activeSide, updatePane]);
+
+    const handleView = useCallback(() => {
+        const location = `${activePane.location}/${activePane.selection?.name}`;
+        updatePane(activeSide, { location, mode: "view" });
+    }, [activePane.location, activePane.selection, activeSide, updatePane]);
+
+    const handleMount = useCallback(() => {
+        window.showDirectoryPicker({ startIn: 'desktop', mode: 'readwrite' }).then(async (handle: FileSystemDirectoryHandle) => {
+            VFS.registerDrive("DROP", new DropDrive(handle), `User's ${handle.name} folder`);
+            updatePane(activeSide, { location: "DROP:", mode: "files", files: undefined, selection: undefined, cursor: undefined, blob: undefined });
+            //setLocation(clampLocation(`${handle.name}://`));
+            //navigate(clampLocation(`DROP:`));
+            //setHistory({ cursor: "", scroll: scrollRef.current?.scrollTop || 0 });
+        });
+    }, []);
+
+    const handleTab = useCallback(() => {
+        setActiveSide((activeSide === "left" ? "right" : "left"));
+    }, [activeSide, setActiveSide]);
+
+    console.log("PARENT:", activePane.selection)
+
+    const labels = mode === "files" ? filesLabels : mode === "view" ? viewLabels : noLabels;
+    const runs = [undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined];
+    if (mode === "files" && activePane.location !== "" && !activePane.parent?.readonly) runs[6] = handleMkdir;
+    if (mode === "files" && activePane.selection?.kind === "file") runs[2] = handleView;
+    if (mode === "files") runs[9] = handleMount;
+    //if (mode === "files" && activePane.selection?.kind === "file" && !activePane.selection?.readonly) runs[3] = handleMkdir;
+
+
+    useKeyboard({
+        F1: runs[0], F2: runs[1], F3: runs[2], F4: runs[3], F5: runs[4],
+        F6: runs[5], F7: runs[6], F8: runs[7], F9: runs[8], F10: runs[9],
+        Tab: handleTab
+    });
+
+    return (
+        <Card className='shrink-0' variant={"ready"}>
+            <CardContent className="justify-between overflow-hidden gap-1 pr-0">
+                {labels.map((label, index) => (
+                    <FButton key={index} fkey={`F${index + 1}`} disabled={!runs[index]}>{label || '\u00A0'}</FButton>
+                ))}
+            </CardContent>
+        </Card>
+    )
+
 
     if (mode === "files") {
         const isUp = activePane.selection?.name === "..";
@@ -82,19 +141,7 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
             updatePane(activeSide, { location, mode: "view" });
         }
 
-        const handleMkdir = useCallback(async () => {
-            await modalManager.show<string | null>(ModalMkDir,
-                {
-                    defaultValue: "new folder 1",
-                    context: { panes, activeSide, updatePane }
-                });
-        }, [activePane.location, activeSide, updatePane]);
 
-        useKeyboard({
-            F7: () => {
-                handleMkdir();
-            }
-        });
 
         return (
             <Card className='shrink-0' variant={"ready"}>

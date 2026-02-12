@@ -42,7 +42,8 @@ export class ROMDrive implements IDrive {
             name,
             kind: data.type === 'dir' ? 'directory' : 'file',
             size: data.content?.size || 0,
-            lastModified: data.type === 'dir' ? undefined : now
+            lastModified: data.type === 'dir' ? undefined : now,
+            readonly: true
         }));
     }
 
@@ -72,27 +73,26 @@ export class ROMDrive implements IDrive {
     //     console.log(`Created directory at ${path}`)
     // }
 
-    async info(path: string): Promise<FileEntry> {
+    async info(path: string): Promise<FileEntry | null> {
         const node = this.navigate(path);
-        if (!node) {
-            throw new Error("File or directory not found");
-        }
+        if (!node) return null;
 
-        const name = path.split('/').filter(Boolean).pop() || 'root';
+        const name = path.split('/').filter(Boolean).pop() || '';
 
         if (node.type === 'file') {
             return {
                 name,
                 kind: 'file',
                 size: node.content?.size || 0,
-                lastModified: Date.now()
+                lastModified: now,
+                readonly: true
             };
         } else {
             return {
                 name,
                 kind: 'directory',
                 size: 0,
-                //lastModified: Date.now()
+                readonly: true
             };
         }
     }

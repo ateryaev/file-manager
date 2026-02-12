@@ -30,6 +30,7 @@ export function ModalMkDir({ defaultValue = "", context, onResolve }: ModalMkDir
     const isValid = validateFolderName(folderName);
 
     const [busy, setBusy] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         setFolderName(defaultValue);
@@ -37,15 +38,21 @@ export function ModalMkDir({ defaultValue = "", context, onResolve }: ModalMkDir
 
     async function handleCreateFolder(e: React.MouseEvent | React.KeyboardEvent) {
         setBusy(true);
+
         console.log("ENTER IN MODAL:", folderName);
         e.preventDefault();
         if (!isValid) return;
-
-        await VFS.mkdir(activePane.location, folderName);
-        const files = await VFS.ls(activePane.location);
-        updatePane(activeSide, { cursor: folderName, files });
+        try {
+            await VFS.mkdir(activePane.location, folderName);
+            const files = await VFS.ls(activePane.location);
+            updatePane(activeSide, { cursor: folderName, files });
+            onResolve(folderName.trim());
+        } catch (err) {
+            console.error("Error creating folder:", err);
+            setError((err as Error).message || "Unknown error");
+        }
         setBusy(false);
-        onResolve(folderName.trim());
+
     }
 
     const handleCancel = () => {
@@ -56,8 +63,20 @@ export function ModalMkDir({ defaultValue = "", context, onResolve }: ModalMkDir
     return (
         <Modal open={true} onClose={handleCancel}>
 
-            <Card variant="ready" className='m-2 max-h-[80svh] ring-black/5 ring-4 gap-0'>
-                <CardContent className='flex-col overflow-auto xgap-4 p-8 py-4 '>
+            <Card variant={error ? "error" : "ready"} className='m-2 max-h-[80svh] ring-black/5 ring-4 gap-0'>
+
+                {error && <CardContent className='flex-col overflow-auto xgap-4 p-8 py-4 '>
+                    <div className='flex justify-between gap-2 text-red-600 '>
+                        {error}
+                    </div>
+                    <ArrowNavigator variant="horizontal">
+                        <div className='flex justify-center w-full gap-2 pt-2'>
+                            <Button disabled={busy} autoFocus outline onClick={handleCancel}>Close</Button>
+                        </div>
+                    </ArrowNavigator>
+                </CardContent>}
+
+                {!error && <CardContent className='flex-col overflow-auto xgap-4 p-8 py-4 '>
                     <div className='flex justify-between gap-2 '>
                         New folder name
                     </div>
@@ -79,7 +98,8 @@ export function ModalMkDir({ defaultValue = "", context, onResolve }: ModalMkDir
                             <Button disabled={!isValid || busy} outline onClick={handleCreateFolder}>Create</Button>
                         </div>
                     </ArrowNavigator>
-                </CardContent>
+                </CardContent>}
+
             </Card>
         </Modal >
     )

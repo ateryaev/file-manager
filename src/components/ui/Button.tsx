@@ -11,7 +11,7 @@ export function Button({ className, kind = "default", outline = false, icon = nu
             className={cn('hover:bg-blue-500/10 outline-none',
                 'cursor-pointer select-none',
                 'disabled:pointer-events-none disabled:text-gray-300',
-                'focus:text-white focus:bg-blue-500/100 px-2 py-1 flex gap-2',
+                'focus:text-white focus:bg-blue-300/100 in-[.variant-error]:focus:bg-red-300 px-2 py-1 flex gap-2',
                 'overflow-hidden',
                 className)} {...props as any}>
             {outline && <span>[</span>}

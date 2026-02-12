@@ -8,6 +8,7 @@ export type FileEntry = {
     description?: string;
     size?: number;
     lastModified?: number;
+    readonly?: boolean;
 };
 
 export interface IDrive {
@@ -16,7 +17,7 @@ export interface IDrive {
     write?(path: string, data: Blob): Promise<void>;
     rm?(path: string): Promise<void>;
     mkdir?(path: string): Promise<void>;
-    info(path: string): Promise<FileEntry>;
+    info(path: string): Promise<FileEntry | null>;
 }
 
 
@@ -48,21 +49,14 @@ export class VFS {
         return drive;
     }
 
-    static async info(location: string): Promise<FileEntry> {
+    static async info(location: string): Promise<FileEntry | null> {
         if (!location) return {
-            name: "root",
+            name: "",
             kind: "root",
-            description: "Web File Manager Drives List"
+            description: "Web File Manager Drives List",
+            readonly: true
         }
         const [label, path] = location.split(":");
-        if (path === "") {
-            return {
-                name: "root",
-                kind: "drive",
-                description: "Drive's root directory"
-            }
-        }
-
         const drive = this.getDrive(label);
         return await drive.info(path);
     }
@@ -89,10 +83,13 @@ export class VFS {
 
     static async mkdir(location: string, name: string): Promise<void> {
         const [label, path] = location.split(":");
-        await sleep(500);
+        //await sleep(500);
         console.log(`VFS.mkdir called on drive: ${label}, path: ${path}, location: ${location}`);
         const drive = this.getDrive(label);
         const newPath = path === "/" ? `/${name}` : `${path}/${name}`;
+        if (!drive.mkdir) throw new Error(`Drive ${label} does not support Mkdir operation`);
+        const info = await drive.info(newPath);
+        if (info) throw new Error(`File or folder with name "${name}" already exists`);
         drive.mkdir && await drive.mkdir(newPath);
         this.notify(location);
     }
@@ -101,6 +98,7 @@ export class VFS {
         const drive = this.getDrive(label);
         const newPath = path === "/" ? `/${name}` : `${path}/${name}`;
         drive.rm && await drive.rm(newPath);
+
         this.notify(location);
     }
 

@@ -37,7 +37,7 @@ export function usePaneKeyboard(handlers: Record<string, (e: KeyboardEvent) => v
 
 
 
-export function useKeyboard(handlers: Record<string, (e: KeyboardEvent) => void>) {
+export function useKeyboard(handlers: Record<string, undefined | ((e: KeyboardEvent) => void)>) {
 
     useEffect(() => {
 

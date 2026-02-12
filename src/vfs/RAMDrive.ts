@@ -190,14 +190,15 @@ export class RAMDrive implements IDrive {
     }
 
     async ls(path: string): Promise<FileEntry[]> {
-        await sleep(500); // Simulate async delay
+        //await sleep(500); // Simulate async delay
         const node = this.navigate(path);
         if (!node || node.type !== 'dir') return [];
         return Object.entries(node.children).map(([name, data]: [string, any]) => ({
             name,
             kind: data.type === 'dir' ? 'directory' : 'file',
             size: data.content?.size || 0,
-            lastModified: data.type === 'dir' ? undefined : now
+            lastModified: data.type === 'dir' ? undefined : now,
+            readonly: false
         }));
     }
 
@@ -209,7 +210,7 @@ export class RAMDrive implements IDrive {
     }
 
     async read(path: string) {
-        await sleep(500); // Simulate async delay
+        //await sleep(500); // Simulate async delay
         const node = this.navigate(path);
         if (!node || node.type !== 'file') throw new Error("Not found");
         return node.content;
@@ -227,27 +228,26 @@ export class RAMDrive implements IDrive {
         console.log(`Created directory at ${path}`)
     }
 
-    async info(path: string): Promise<FileEntry> {
+    async info(path: string): Promise<FileEntry | null> {
         const node = this.navigate(path);
-        if (!node) {
-            throw new Error("File or directory not found");
-        }
+        if (!node) return null; //return null for non-existent paths, instead of throwing an error
 
-        const name = path.split('/').filter(Boolean).pop() || 'root';
+        const name = path.split('/').filter(Boolean).pop() || '';
 
         if (node.type === 'file') {
             return {
                 name,
                 kind: 'file',
                 size: node.content?.size || 0,
-                lastModified: Date.now()
+                lastModified: now,
+                readonly: false
             };
         } else {
             return {
                 name,
                 kind: 'directory',
                 size: 0,
-                //lastModified: Date.now()
+                readonly: false
             };
         }
     }
