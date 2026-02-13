@@ -75,7 +75,7 @@ export class VFS {
         //await sleep(500); // Simulate latency
         let items = await drive.ls(path);
         //if (path !== "/") {
-        items.push({ name: "..", kind: "directory" });
+        items.push({ name: "..", kind: "directory", description: "Parent Directory", readonly: true });
         //}
         items.sort(fileSort);
         return items;
@@ -83,6 +83,10 @@ export class VFS {
 
     static async mkdir(location: string, name: string): Promise<void> {
         const [label, path] = location.split(":");
+        name = name.trim();
+        if (name.length === 0 || name.length > 255) {
+            throw new Error("Invalid folder name");
+        }
         //await sleep(500);
         console.log(`VFS.mkdir called on drive: ${label}, path: ${path}, location: ${location}`);
         const drive = this.getDrive(label);

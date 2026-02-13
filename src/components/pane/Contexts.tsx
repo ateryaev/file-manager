@@ -21,7 +21,7 @@ export type PaneState = {
 export function PanesContextProvider({ children }: { children: React.ReactNode }) {
     const [panes, setPanes] = useState<Record<Side, PaneState>>({
         left: { location: "RAM:", mode: "files" },
-        right: { location: "ROM:", mode: "files" }
+        right: { location: "RAM:/docs", mode: "files" }
     });
 
     const [activeSide, setActiveSide] = useState<Side>("left");

@@ -7,6 +7,9 @@ import { ModalMkDir } from "../dialogs/ModalMkDir";
 import { VFS } from "../vfs/vfs";
 import { useKeyboard } from "./pane/Hooks";
 import { DropDrive } from "../vfs/DropDrive";
+import { ModalConfirm } from "../dialogs/ModalConfirm";
+import { ModalBusy } from "../dialogs/ModalBusy";
+import { sleep } from "../libs/utils";
 
 function FButton({ fkey, ...props }: {
     fkey: string;
@@ -67,11 +70,27 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
     const targetMode = targetPane.mode;
 
     const handleMkdir = useCallback(async () => {
-        await modalManager.show<string | null>(ModalMkDir,
-            {
-                defaultValue: "new folder 1",
-                context: { panes, activeSide, updatePane }
-            });
+
+        function validateFolderName(name: string): boolean {
+            name = name.trim();
+            if (name.length === 0 || name.length > 255) return false;
+            const invalidChars = /[<>:"\/\\|?*\x00-\x1F]/g;
+            return !invalidChars.test(name);
+        }
+        const folderName = await modalManager.showPrompt("New folder name", "new folder 1", validateFolderName, "Create");
+        if (!folderName) return;
+        await modalManager.showBusy(`Creating ${folderName}...`, async () => {
+            //await sleep(2000); //simulate delay
+            console.log("CREATED:", folderName);
+            try {
+                await VFS.mkdir(activePane.location, folderName);
+                const files = await VFS.ls(activePane.location);
+                updatePane(activeSide, { cursor: folderName, files });
+            } catch (err) {
+                console.error("Error creating folder:", err);
+                await modalManager.showAlert((err as Error).message || "Unknown error", "error");
+            }
+        });
     }, [activePane.location, activeSide, updatePane]);
 
     const handleView = useCallback(() => {
@@ -88,7 +107,29 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
             //setHistory({ cursor: "", scroll: scrollRef.current?.scrollTop || 0 });
         });
     }, []);
+    const handleDelete = useCallback(async () => {
+        const location = `${activePane.location}/${activePane.selection?.name}`;
+        const todelete = await modalManager.showConfirm(`Are you sure to delete ${location}?`);
+        if (todelete) {
+            await modalManager.showBusy(`Deleting ${location}...`, async () => {
+                try {
+                    await VFS.rm(activePane.location, activePane.selection?.name);
+                } catch (err) {
+                    console.error("Error deleting file:", err);
+                    await modalManager.showAlert((err as Error).message || "Unknown error", "error");
+                    return;
+                }
+                //await sleep(2000); //simulate delay
+                console.log("DELETED:", location);
+            });
 
+            //await modalManager.showAlert(`${location} is deleted!`, "info");
+            //console.log("DELETED MODAL CLOSED!");
+            // await VFS.rm(activePane.location, activePane.selection?.name);
+            //setHistory({ cursor: cursor, scroll: scrollRef.current?.scrollTop || 0 }); //TODO: set cursor near deleted file
+            //console.log("DELETE:", location, cursor);
+        }
+    }, [activePane.location, activePane.selection]);
     const handleTab = useCallback(() => {
         setActiveSide((activeSide === "left" ? "right" : "left"));
     }, [activeSide, setActiveSide]);
@@ -100,8 +141,8 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
     if (mode === "files" && activePane.location !== "" && !activePane.parent?.readonly) runs[6] = handleMkdir;
     if (mode === "files" && activePane.selection?.kind === "file") runs[2] = handleView;
     if (mode === "files") runs[9] = handleMount;
+    if (mode === "files" && activePane.selection && !activePane.selection?.readonly) runs[7] = handleDelete;
     //if (mode === "files" && activePane.selection?.kind === "file" && !activePane.selection?.readonly) runs[3] = handleMkdir;
-
 
     useKeyboard({
         F1: runs[0], F2: runs[1], F3: runs[2], F4: runs[3], F5: runs[4],

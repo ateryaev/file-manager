@@ -1,5 +1,9 @@
 import { createRoot, Root } from 'react-dom/client';
 import { ComponentType, createElement } from 'react';
+import { ModalConfirm } from '../dialogs/ModalConfirm';
+import { ModalBusy } from '../dialogs/ModalBusy';
+import { ModalAlert } from '../dialogs/ModalAlert';
+import { ModalPrompt } from '../dialogs/ModalPrompt';
 
 class ModalManager {
     private showingCount = 0;
@@ -35,6 +39,22 @@ class ModalManager {
         });
     }
 
+    showConfirm(message: string): Promise<boolean> {
+        return this.show(ModalConfirm, { message });
+    }
+
+    showBusy(message: string, func: () => Promise<void>): Promise<boolean> {
+        return this.show(ModalBusy, { message, func });
+    }
+
+    showAlert(message: string, variant: "info" | "warning" | "error" = "info"): Promise<void> {
+        return this.show(ModalAlert, { message, variant });
+    }
+
+    showPrompt(title: string, defaultValue?: string, validate?: (value: string) => boolean, action?: string): Promise<string | null> {
+        return this.show(ModalPrompt, { title, defaultValue, validate, action });
+    }
+
     private close(id: symbol) {
         const modal = this.activeModals.get(id);
         if (modal) {
@@ -46,3 +66,4 @@ class ModalManager {
 }
 
 export const modalManager = new ModalManager();
+
