@@ -15,13 +15,13 @@ export type PaneState = {
     files?: FileEntry[]; // list of files in the current directory, undefined if not loaded yet
     blob?: Blob; // if this pane is viewing a file, the file content blob
     mode?: PaneMode; // current mode of the pane, determines how to display the content and what operations are available
-    busy?: boolean; // whether the pane is currently performing an operation, used to disable interactions or show loading state
+    error?: string; // error message if loading the pane content failed
 }
 
 export function PanesContextProvider({ children }: { children: React.ReactNode }) {
     const [panes, setPanes] = useState<Record<Side, PaneState>>({
         left: { location: "RAM:", mode: "files" },
-        right: { location: "RAM:/docs", mode: "files" }
+        right: { location: "RAM:/docs/2222/333", mode: "files" }
     });
 
     const [activeSide, setActiveSide] = useState<Side>("left");
@@ -55,12 +55,18 @@ export function PaneContextProvider({ side, children }: { side: Side, children: 
     useEffect(() => {
         //if (!state.location) return;
         //if (state.busy) return;
-        update({ files: undefined, blob: undefined, selection: undefined, cursor: undefined });
+        update({ files: undefined, blob: undefined, selection: undefined, cursor: undefined, error: undefined });
 
         async function load() {
             //update({ files: undefined, blob: undefined, selection: undefined, cursor: undefined});
             console.log("Loading pane content for location1:", state.location);
+
             const fileInfo = await VFS.info(state.location);
+            if (!fileInfo) {
+                //update({ error: `File ${state.location} not found` });
+                update({ error: `File not found` });
+                return;
+            }
             console.log("Loading pane content for location2:", state.location, fileInfo);
             if (fileInfo.kind !== "file") {
                 const files = await VFS.ls(state.location);

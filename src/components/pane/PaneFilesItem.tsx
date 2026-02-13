@@ -18,11 +18,7 @@ export const PaneFileListItem = memo(function PaneFileListItem({ onExecute, onSe
     }, [selected]);
 
     const size = `${formatBytes(file.size || 0)}`;
-    let description = null;
 
-    if (file.kind === "directory") description = "Folder";
-    if (file.kind === "drive") description = file.description;
-    if (file.name === "..") description = "Up";
     const iconsize = "1em";
     let icon = file.kind !== "file" ?
         <IconFolderFilled size={iconsize} className={cn("text-yellow-300 shrink-0", selected && "text-white/50")} /> :
@@ -41,9 +37,16 @@ export const PaneFileListItem = memo(function PaneFileListItem({ onExecute, onSe
 
             {icon && <div className="hidden @[100px]:block">{icon}</div>}
             <div className="flex-1 truncate">
-                {file.name}<Counter />
+                {file.name}
+                {file.kind === "drive" && <span className="opacity-50"> {file.description}</span>}
             </div>
-            <div className="hidden @[300px]:block">{description || size}</div>
+
+            <div className="hidden @[300px]:block truncate">
+                {file.kind === "file" && size}
+                {file.kind === "directory" && file.name !== ".." && "Folder"}
+                {file.name === ".." && "Up"}
+                {file.kind === "drive" && "Drive"}
+            </div>
 
             {file.lastModified && <><div className="hidden @[400px]:block">{formatDate(file.lastModified)}</div>
                 <div className="hidden @[500px]:block">{formatTime(file.lastModified)}</div></>}

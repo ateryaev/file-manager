@@ -11,7 +11,7 @@ const ROOT: any = {
     children: {
 
         ".gitkeep": { type: 'file', content: new Blob([]) },
-        "docs": {
+        "docs folder long name test string one two three": {
             type: 'dir', children: {
                 "welcome.txt": { type: 'file', content: new Blob(["Welcome to the RAM Drive! This is a temporary storage area."], { type: 'text/plain' }) },
                 "help.md": { type: 'file', content: new Blob(["# Help Documentation\n\nThis is the help file for the RAM Drive."], { type: 'text/markdown' }) },

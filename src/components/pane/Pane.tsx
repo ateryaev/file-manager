@@ -9,13 +9,14 @@ import { PaneViewText } from "./PaneViewText";
 import { PaneContext } from "./Contexts";
 import { clampLocation } from "../../libs/location";
 import { FileEntry } from "../../vfs/vfs";
+import { PaneError } from "./PaneError";
 
 export const Pane = memo(function FilePane({ ...props }: {
 } & React.ComponentProps<"div">) {
 
-    const { isActive, location, activate, files, blob, navigate, selection } = useContext(PaneContext);
+    const { isActive, location, activate, files, blob, error, navigate, selection } = useContext(PaneContext);
     //console.log("Rendering PANE", location, files);
-    const loading = !files && !blob;
+    const loading = !files && !blob && !error;
 
     const handleNavigate = useCallback((file: FileEntry) => {
         navigate(clampLocation(`${location}/${file.name}`), file.kind === "file" ? "view" : "files");
@@ -25,7 +26,7 @@ export const Pane = memo(function FilePane({ ...props }: {
     return (
         <Card onMouseDown={activate} className={cn('flex-1')} variant={isActive ? 'ready' : 'blur'} {...props} >
             <CardHeader className={cn("text-blue-600")}>
-                <div className={cn(location ? "" : "text-center w-full text-blue-600")}>
+                <div className={cn("truncate", location ? "" : "text-center w-full text-blue-600")}>
                     {location || "Drives Pane"}
                 </div>
                 <Counter />
@@ -40,10 +41,11 @@ export const Pane = memo(function FilePane({ ...props }: {
             {parent?.kind === "drive" && <PaneFileList />}
             {parent?.kind === "root" && <PaneFileList />}*/}
 
-            {loading && <CardContent className="px-3 py-1 text-gray-500">Loading...</CardContent>}
-            {selection && <CardHeader className="shrink-0">
+            {loading && <CardContent className="px-3 py-1 text-gray-500">Loading</CardContent>}
+            {!loading && error && <PaneError error={error} onExit={() => navigate(clampLocation(`${location}/..`))} />}
+            {/* {selection && <CardHeader className="shrink-0">
                 {selection.name}
-            </CardHeader>}
+            </CardHeader>} */}
         </Card>
     );
 });

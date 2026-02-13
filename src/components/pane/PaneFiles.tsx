@@ -1,6 +1,6 @@
 import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { FileEntry } from "../../vfs/vfs";
-import { CardContent } from "../ui/Card";
+import { CardContent, CardHeader } from "../ui/Card";
 import { Counter } from "../RenderCounter";
 import { PaneContext } from "./Contexts";
 import { usePaneHistory, usePaneKeyboard } from "./Hooks";
@@ -39,10 +39,12 @@ export const PaneFiles = memo(({ files, onExecute }:
     useEffect(() => {
         if (!files) return;
         let newCursor = getHistory().cursor;
-        if (!files.find(file => file.name === newCursor)) {
+        let newSelection = files.find(file => file.name === newCursor);
+        if (!newSelection) {
             newCursor = files[0]?.name || "";
+            newSelection = files[0];
         }
-        update({ cursor: newCursor });
+        update({ cursor: newCursor, selection: newSelection });
         scrollRef.current && (scrollRef.current.scrollTop = getHistory().scroll || 0);
     }, [files, getHistory]);
 
@@ -81,31 +83,7 @@ export const PaneFiles = memo(({ files, onExecute }:
             if (!files) return;
             moveCursor(files.length - 1);
         },
-        // F7: async (e) => {
 
-        //     const folderName = await modalManager.show<string | null>(ModalMkDir, { defaultValue: "new folder 1" });
-        //     if (folderName) {
-        //         await VFS.mkdir(location, folderName);
-        //         setHistory({ cursor: folderName, scroll: scrollRef.current?.scrollTop || 0 });
-        //     }
-        // },
-        // F8: async (e) => {
-        //     if (!cursor) return;
-        //     const todelete = await modalManager.show<boolean, { message: string }>(ModalConfirm, { message: `Are you sure to delete ${location}/${cursor}?` });
-        //     if (todelete) {
-        //         await VFS.rm(location, cursor);
-        //         setHistory({ cursor: cursor, scroll: scrollRef.current?.scrollTop || 0 }); //TODO: set cursor near deleted file
-        //         console.log("DELETE:", location, cursor);
-        //     }
-        // },
-        // F10: (e) => {
-        //     window.showDirectoryPicker({ startIn: 'desktop', mode: 'readwrite' }).then(async (handle: FileSystemDirectoryHandle) => {
-        //         VFS.registerDrive("DROP", new DropDrive(handle), `User's ${handle.name} folder`);
-        //         //setLocation(clampLocation(`${handle.name}://`));
-        //         navigate(clampLocation(`DROP:`));
-        //         //setHistory({ cursor: "", scroll: scrollRef.current?.scrollTop || 0 });
-        //     });
-        // },
         Escape: () => {
             // setLocation(clampLocation(`${location}/..`));
             if (!files) return;
@@ -125,6 +103,14 @@ export const PaneFiles = memo(({ files, onExecute }:
                 <PaneFilesList files={files} cursor={cursor || ""}
                     handleSelect={handleSelect} handleExecute={handleExecute} />
             </CardContent>
+            <CardHeader
+                className="starting:bg-blue-100 cursor-pointer bg-gray-100 hover:bg-blue-100 transition-all"
+                onClick={() => handleExecute(files?.find(file => file.name === cursor)!)}>
+                <div className="w-full flex justify-between items-center">
+                    <span className="truncate">{cursor}</span>
+                    <span className="text-blue-500">Enter</span>
+                </div>
+            </CardHeader>
         </>
     );
 });

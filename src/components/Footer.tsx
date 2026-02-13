@@ -10,6 +10,7 @@ import { DropDrive } from "../vfs/DropDrive";
 import { ModalConfirm } from "../dialogs/ModalConfirm";
 import { ModalBusy } from "../dialogs/ModalBusy";
 import { sleep } from "../libs/utils";
+import { clampLocation } from "../libs/location";
 
 function FButton({ fkey, ...props }: {
     fkey: string;
@@ -102,11 +103,8 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
         window.showDirectoryPicker({ startIn: 'desktop', mode: 'readwrite' }).then(async (handle: FileSystemDirectoryHandle) => {
             VFS.registerDrive("DROP", new DropDrive(handle), `User's ${handle.name} folder`);
             updatePane(activeSide, { location: "DROP:", mode: "files", files: undefined, selection: undefined, cursor: undefined, blob: undefined });
-            //setLocation(clampLocation(`${handle.name}://`));
-            //navigate(clampLocation(`DROP:`));
-            //setHistory({ cursor: "", scroll: scrollRef.current?.scrollTop || 0 });
         });
-    }, []);
+    }, [activeSide, updatePane]);
     const handleDelete = useCallback(async () => {
         const location = `${activePane.location}/${activePane.selection?.name}`;
         const todelete = await modalManager.showConfirm(`Are you sure to delete ${location}?`);
@@ -119,17 +117,15 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
                     await modalManager.showAlert((err as Error).message || "Unknown error", "error");
                     return;
                 }
-                //await sleep(2000); //simulate delay
-                console.log("DELETED:", location);
             });
-
-            //await modalManager.showAlert(`${location} is deleted!`, "info");
-            //console.log("DELETED MODAL CLOSED!");
-            // await VFS.rm(activePane.location, activePane.selection?.name);
-            //setHistory({ cursor: cursor, scroll: scrollRef.current?.scrollTop || 0 }); //TODO: set cursor near deleted file
-            //console.log("DELETE:", location, cursor);
         }
     }, [activePane.location, activePane.selection]);
+
+    const handleUp = useCallback(() => {
+        const location = clampLocation(`${activePane.location}/..`);
+        updatePane(activeSide, { location, mode: "files" });
+    }, [activePane.location, activeSide, updatePane]);
+
     const handleTab = useCallback(() => {
         setActiveSide((activeSide === "left" ? "right" : "left"));
     }, [activeSide, setActiveSide]);
@@ -138,10 +134,18 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
 
     const labels = mode === "files" ? filesLabels : mode === "view" ? viewLabels : noLabels;
     const runs = [undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined];
-    if (mode === "files" && activePane.location !== "" && !activePane.parent?.readonly) runs[6] = handleMkdir;
-    if (mode === "files" && activePane.selection?.kind === "file") runs[2] = handleView;
-    if (mode === "files") runs[9] = handleMount;
-    if (mode === "files" && activePane.selection && !activePane.selection?.readonly) runs[7] = handleDelete;
+
+    const loading = !activePane.files && !activePane.error && !activePane.blob;
+    if (!loading) {
+        if (!activePane.error) {
+            if (mode === "files" && activePane.selection?.kind === "file") runs[2] = handleView;
+            if (mode === "files" && !activePane.parent?.readonly) runs[6] = handleMkdir;
+            if (mode === "files" && activePane.selection && !activePane.selection?.readonly) runs[7] = handleDelete;
+        }
+
+        if (mode === "files") runs[9] = handleMount;
+        if (mode !== "files") runs[9] = handleUp;
+    }
     //if (mode === "files" && activePane.selection?.kind === "file" && !activePane.selection?.readonly) runs[3] = handleMkdir;
 
     useKeyboard({
@@ -154,7 +158,7 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
         <Card className='shrink-0' variant={"ready"}>
             <CardContent className="justify-between overflow-hidden gap-1 pr-0">
                 {labels.map((label, index) => (
-                    <FButton key={index} fkey={`F${index + 1}`} disabled={!runs[index]}>{label || '\u00A0'}</FButton>
+                    <FButton key={index} fkey={`F${index + 1}`} disabled={!runs[index]} onClick={runs[index]}>{label || '\u00A0'}</FButton>
                 ))}
             </CardContent>
         </Card>
