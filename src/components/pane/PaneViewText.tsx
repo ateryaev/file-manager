@@ -3,7 +3,7 @@ import { CardContent, CardHeader } from "../ui/Card";
 import { blobToTextIfPossible } from "../../libs/utils";
 import { usePaneKeyboard } from "./Hooks";
 
-export function PaneViewText({ blob, onExit }: { blob?: Blob, onExit?: () => void }) {
+export function PaneViewText({ blob }: { blob?: Blob }) {
     //const { location, parent } = useContext(PaneContext);
 
 
@@ -19,10 +19,7 @@ export function PaneViewText({ blob, onExit }: { blob?: Blob, onExit?: () => voi
     }, [blob]);
 
     usePaneKeyboard({
-        Escape: () => {
-            console.log("NAVIGATE:", location);
-            onExit?.();
-        },
+
         ArrowUp: () => {
             scrollRef.current?.scrollTo({ top: scrollRef.current?.scrollTop - 10, behavior: 'smooth' });
         },

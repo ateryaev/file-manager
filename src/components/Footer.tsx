@@ -112,6 +112,11 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
         updatePane(activeSide, { location, mode: "view" });
     }, [activePane.location, activePane.selection, activeSide, updatePane]);
 
+    const handleEdit = useCallback(() => {
+        const location = `${activePane.location}/${activePane.selection?.name}`;
+        updatePane(activeSide, { location, mode: "edit" });
+    }, [activePane.location, activePane.selection, activeSide, updatePane]);
+
     const handleMount = useCallback(() => {
         window.showDirectoryPicker({ startIn: 'desktop', mode: 'readwrite' }).then(async (handle: FileSystemDirectoryHandle) => {
             VFS.registerDrive("DROP", new DropDrive(handle), `User's ${handle.name} folder`);
@@ -134,6 +139,19 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
         }
     }, [activePane.location, activePane.selection]);
 
+    const handleSave = useCallback(async () => {
+        if (!activePane.getEditedBlob) return;
+        await modalManager.showBusy("Saving...", async () => {
+            try {
+                const blob = await activePane.getEditedBlob!();
+                await VFS.write(activePane.location, blob);
+            } catch (err) {
+                console.error("Error saving file:", err);
+                await modalManager.showAlert((err as Error).message || "Unknown error", "error");
+            }
+        });
+    }, [activePane.getEditedBlob, activePane.location]);
+
     const handleUp = useCallback(() => {
         const location = clampLocation(`${activePane.location}/..`);
         updatePane(activeSide, { location, mode: "files" });
@@ -146,15 +164,24 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
 
     console.log("PARENT:", activePane.selection)
 
-    const labels = mode === "files" ? filesLabels : mode === "view" ? viewLabels : noLabels;
+    let labels = null;
+    if (mode === "edit") labels = editLabels;
+    else if (mode === "view") labels = viewLabels;
+    else if (mode === "files") labels = filesLabels;
+    else labels = noLabels;
+
     const runs = [undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined];
 
     const loading = !activePane.files && !activePane.error && !activePane.blob;
     if (!loading) {
         if (!activePane.error) {
+
+            if (mode === "edit" && activePane.getEditedBlob) runs[1] = handleSave;
             if (mode === "files" && activePane.selection?.kind === "file") runs[2] = handleView;
+            if (mode === "files" && activePane.selection?.kind === "file" && !activePane.selection?.readonly) runs[3] = handleEdit;
             if (mode === "files" && !activePane.parent?.readonly) runs[6] = handleMkdir;
             if (mode === "files" && activePane.selection && !activePane.selection?.readonly) runs[7] = handleDelete;
+
         }
         runs[8] = handleResize;
 
@@ -171,7 +198,8 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
     useKeyboard({
         F1: runs[0], F2: runs[1], F3: runs[2], F4: runs[3], F5: runs[4],
         F6: runs[5], F7: runs[6], F8: runs[7], F9: runs[8], F10: runs[9],
-        Tab: handleTab
+        Tab: handleTab,
+        Escape: runs[9],
     });
 
     return (

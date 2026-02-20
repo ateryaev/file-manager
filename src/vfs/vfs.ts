@@ -73,7 +73,7 @@ export class VFS {
         const [label, path] = location.split(":");
         const drive = this.getDrive(label);
         console.log(`VFS.ls called on drive: ${label}, path: ${path}`);
-        await sleep(1500); // Simulate latency
+        //await sleep(1500); // Simulate latency
         let items = await drive.ls(path);
         //if (path !== "/") {
         items.push({ name: "..", kind: "directory", description: "Parent Directory", readonly: true });
@@ -112,6 +112,16 @@ export class VFS {
         const drive = this.getDrive(label);
         return await drive.read(path);
     }
+
+    static async write(location: string, data: Blob): Promise<void> {
+        const [label, path] = location.split(":");
+        const drive = this.getDrive(label);
+        await sleep(100)
+        if (!drive.write) throw new Error(`Drive ${label} does not support write operation`);
+        await drive.write(path, data);
+        this.notify(location);
+    }
+
     static getAllLabels(): string[] {
         return Object.keys(this.drives);
     }

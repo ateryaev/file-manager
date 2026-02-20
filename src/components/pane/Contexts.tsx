@@ -5,7 +5,7 @@ export const PanesContext = createContext<any>({});
 export const PaneContext = createContext<any>({});
 
 export type Side = "left" | "right";
-export type PaneMode = "files" | "view" | "view-as-text" | "view-as-binary" | "view-as-image" | "edit-text";
+export type PaneMode = "files" | "view" | "edit";
 
 export type PaneState = {
     location: string; // e.g. "RAM:/docs"
@@ -16,12 +16,13 @@ export type PaneState = {
     blob?: Blob; // if this pane is viewing a file, the file content blob
     mode?: PaneMode; // current mode of the pane, determines how to display the content and what operations are available
     error?: string; // error message if loading the pane content failed
+    getEditedBlob?: () => Promise<Blob>; // function to get the new blob content when saving an edited file
 }
 
 export function PanesContextProvider({ children }: { children: React.ReactNode }) {
     const [panes, setPanes] = useState<Record<Side, PaneState>>({
-        left: { location: "DROP:", mode: "files" },
-        right: { location: "RAM:/docs/2222/333", mode: "files" }
+        left: { location: "RAM:", mode: "files" },
+        right: { location: "RAM:", mode: "files" }
     });
 
     const [activeSide, setActiveSide] = useState<Side>("left");

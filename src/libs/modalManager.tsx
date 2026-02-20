@@ -18,6 +18,7 @@ class ModalManager {
         props?: P
     ): Promise<T> {
         this.showingCount++;
+        const previouslyFocused = document.activeElement as HTMLElement | null;
         return new Promise<T>((resolve) => {
             const id = Symbol();
             const container = document.createElement('div');
@@ -27,7 +28,10 @@ class ModalManager {
             const handleResolve = (value: T) => {
                 resolve(value);
                 this.close(id);
-                setTimeout(() => { this.showingCount-- });
+                setTimeout(() => {
+                    this.showingCount--;
+                    previouslyFocused?.focus();
+                });
             };
 
             root.render(createElement(Component, {

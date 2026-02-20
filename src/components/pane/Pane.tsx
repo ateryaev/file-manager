@@ -6,18 +6,23 @@ import { PaneFiles } from "./PaneFiles";
 import { Counter } from "../RenderCounter";
 
 import { PaneViewText } from "./PaneViewText";
+import { PaneEditText } from "./PaneEditText";
 import { PaneContext } from "./Contexts";
 import { clampLocation } from "../../libs/location";
-import { FileEntry } from "../../vfs/vfs";
+import { FileEntry, VFS } from "../../vfs/vfs";
 import { PaneError } from "./PaneError";
 import { PaneLoading } from "./PaneLoading";
 
 export const Pane = memo(function FilePane({ ...props }: {
 } & React.ComponentProps<"div">) {
 
-    const { isActive, location, activate, files, blob, error, navigate, selection } = useContext(PaneContext);
+    const { isActive, location, mode, activate, files, blob, error, navigate, update, selection } = useContext(PaneContext);
     //console.log("Rendering PANE", location, files);
     const loading = !files && !blob && !error;
+
+    const handleUpdate = useCallback((getBlob?: () => Blob) => {
+        update({ getEditedBlob: getBlob });
+    }, [navigate, location]);
 
     const handleNavigate = useCallback((file: FileEntry) => {
         navigate(clampLocation(`${location}/${file.name}`), file.kind === "file" ? "view" : "files");
@@ -34,19 +39,12 @@ export const Pane = memo(function FilePane({ ...props }: {
             </CardHeader>
 
             {!loading && files && <PaneFiles files={files} onExecute={handleNavigate} />}
-            {!loading && blob && <PaneViewText blob={blob} onExit={() => navigate(clampLocation(`${location}/..`))} />}
-
-            {/* {parent?.kind === "directory" && <PaneFileList files={files} onExecute={navigate} />}
-            {parent?.kind === "file" && <ViewTextFile />}
-
-            {parent?.kind === "drive" && <PaneFileList />}
-            {parent?.kind === "root" && <PaneFileList />}*/}
+            {!loading && blob && mode !== "edit" && <PaneViewText blob={blob} />}
+            {!loading && blob && mode === "edit" && <PaneEditText focused={isActive} blob={blob} onUpdate={handleUpdate} />}
 
             {loading && <PaneLoading />}
             {!loading && error && <PaneError error={error} onExit={() => navigate(clampLocation(`${location}/..`))} />}
-            {/* {selection && <CardHeader className="shrink-0">
-                {selection.name}
-            </CardHeader>} */}
+
         </Card>
     );
 });

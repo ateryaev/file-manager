@@ -84,11 +84,6 @@ export const PaneFiles = memo(({ files, onExecute }:
             moveCursor(files.length - 1);
         },
 
-        Escape: () => {
-            // setLocation(clampLocation(`${location}/..`));
-            if (!files) return;
-            handleExecute(files[0], false);
-        },
         Enter: () => {
             console.log("ENTER:", cursor);
             if (!files) return;
