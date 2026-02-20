@@ -56,14 +56,14 @@ export class DropDrive implements IDrive {
                     name,
                     kind: 'file',
                     size: file.size,
-                    lastModified: file.lastModified
+                    lastModified: file.lastModified,
+                    readonly: true
                 });
             } else {
                 entries.push({
                     name,
                     kind: 'directory',
-                    size: 0,
-                    //lastModified: Date.now()
+                    readonly: true
                 });
             }
         }
@@ -112,14 +112,15 @@ export class DropDrive implements IDrive {
                 name,
                 kind: 'file',
                 size: file.size,
-                lastModified: file.lastModified
+                lastModified: file.lastModified,
+                readonly: true
             };
         } else {
             return {
                 name,
                 kind: 'directory',
                 size: 0,
-                lastModified: Date.now()
+                readonly: true
             };
         }
     }

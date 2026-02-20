@@ -10,6 +10,7 @@ import { PaneContext } from "./Contexts";
 import { clampLocation } from "../../libs/location";
 import { FileEntry } from "../../vfs/vfs";
 import { PaneError } from "./PaneError";
+import { PaneLoading } from "./PaneLoading";
 
 export const Pane = memo(function FilePane({ ...props }: {
 } & React.ComponentProps<"div">) {
@@ -41,7 +42,7 @@ export const Pane = memo(function FilePane({ ...props }: {
             {parent?.kind === "drive" && <PaneFileList />}
             {parent?.kind === "root" && <PaneFileList />}*/}
 
-            {loading && <CardContent className="px-3 py-1 text-gray-500">Loading</CardContent>}
+            {loading && <PaneLoading />}
             {!loading && error && <PaneError error={error} onExit={() => navigate(clampLocation(`${location}/..`))} />}
             {/* {selection && <CardHeader className="shrink-0">
                 {selection.name}

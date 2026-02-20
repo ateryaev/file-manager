@@ -43,9 +43,9 @@ export class VFS {
         // this.notify(drive);
     }
 
-    static getDrive(label: string): IDrive {
+    static getDrive(label: string): IDrive | null {
         const drive = this.drives[label];
-        if (!drive) throw new Error(`Drive ${label} not found`);
+        if (!drive) return null;
         return drive;
     }
 
@@ -58,6 +58,7 @@ export class VFS {
         }
         const [label, path] = location.split(":");
         const drive = this.getDrive(label);
+        if (!drive) return null;
         return await drive.info(path);
     }
 
@@ -65,14 +66,14 @@ export class VFS {
         if (!location) {
             const items: FileEntry[] = [];
             for (const label of this.getAllLabels()) {
-                items.push({ name: `${label}:`, kind: "drive", description: this.driveDescriptions[label] });
+                items.push({ name: `${label}:`, kind: "drive", description: this.driveDescriptions[label], readonly: true });
             }
             return items;
         }
         const [label, path] = location.split(":");
         const drive = this.getDrive(label);
         console.log(`VFS.ls called on drive: ${label}, path: ${path}`);
-        //await sleep(500); // Simulate latency
+        await sleep(1500); // Simulate latency
         let items = await drive.ls(path);
         //if (path !== "/") {
         items.push({ name: "..", kind: "directory", description: "Parent Directory", readonly: true });

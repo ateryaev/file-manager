@@ -62,13 +62,26 @@ const editLabels = ["Help", "Save", "", "", "", "", "Search", "", "Resize", "Exi
 const noLabels = ["", "", "", "", "", "", "", "", "", ""];
 
 export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "delete") => void }) {
-    const { panes, activeSide, updatePane, setActiveSide } = useContext(PanesContext);
+    const { panes, activeSide, updatePane, setActiveSide, size, setSize } = useContext(PanesContext);
     const activePane = panes[activeSide];
     const hasSelection = !!activePane.selection;
     const targetPane = panes[activeSide === "left" ? "right" : "left"];
 
     const mode = activePane.mode;
     const targetMode = targetPane.mode;
+
+    const handleResize = useCallback(() => {
+        const currentSize = activeSide === "left" ? size : 100 - size;
+        let newCurrentSize = 50;
+        //(if 25 - go to 50, if 50 - go to 75, if 75 or more - go to 100, if 100 - go to 50)
+        if (currentSize <= 25) newCurrentSize = 50;
+        else if (currentSize <= 50) newCurrentSize = 75;
+        else if (currentSize <= 75) newCurrentSize = 100;
+        else newCurrentSize = 50;
+
+        const newSize = activeSide === "left" ? newCurrentSize : 100 - newCurrentSize;
+        setSize(newSize);
+    }, [activeSide, size, setSize]);
 
     const handleMkdir = useCallback(async () => {
 
@@ -127,8 +140,9 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
     }, [activePane.location, activeSide, updatePane]);
 
     const handleTab = useCallback(() => {
+        if (size === 0 || size === 100) return
         setActiveSide((activeSide === "left" ? "right" : "left"));
-    }, [activeSide, setActiveSide]);
+    }, [activeSide, setActiveSide, size]);
 
     console.log("PARENT:", activePane.selection)
 
@@ -142,9 +156,15 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
             if (mode === "files" && !activePane.parent?.readonly) runs[6] = handleMkdir;
             if (mode === "files" && activePane.selection && !activePane.selection?.readonly) runs[7] = handleDelete;
         }
+        runs[8] = handleResize;
 
-        if (mode === "files") runs[9] = handleMount;
-        if (mode !== "files") runs[9] = handleUp;
+        if (activePane.location) {
+            runs[9] = handleUp;
+            labels[9] = "Back";
+        } else {
+            runs[9] = handleMount;
+            labels[9] = "Mount";
+        }
     }
     //if (mode === "files" && activePane.selection?.kind === "file" && !activePane.selection?.readonly) runs[3] = handleMkdir;
 
@@ -163,64 +183,4 @@ export function Footer({ onAction }: { onAction?: (action: "mkdir" | "view" | "d
             </CardContent>
         </Card>
     )
-
-
-    if (mode === "files") {
-        const isUp = activePane.selection?.name === "..";
-        const isFolder = activePane.selection?.kind === "directory";
-        const isFile = activePane.selection?.kind === "file";
-        const isRoot = activePane.location === "";
-
-        const canRename = !isRoot && !isUp && hasSelection;
-        const canView = hasSelection && isFile;
-        const canEdit = hasSelection && isFile;
-        const canCopy = !isRoot && !isUp && hasSelection && targetMode === "files"; //can copy if there's a selection and the other pane is in files mode
-        const canMove = !isRoot && canCopy; //same conditions as copy, but also require write permissions which we don't track yet
-        const canMkdir = !isRoot; //false if readonly
-        const canDelete = !isRoot && !isUp && hasSelection; //false if readonly, or if selection is ".."
-
-        //activePane.selection.kind === "file" ? "view" : "mkdir"
-
-        function handleView() {
-            const location = `${activePane.location}/${activePane.selection?.name}`;
-            updatePane(activeSide, { location, mode: "view" });
-        }
-
-
-
-        return (
-            <Card className='shrink-0' variant={"ready"}>
-                <CardContent className="justify-between overflow-hidden gap-1 pr-0">
-                    <FButton fkey="F1">Help</FButton>
-                    <FButton fkey="F2" disabled={!canRename}>Rename</FButton>
-                    <FButton fkey="F3" disabled={!canView} onClick={handleView}>View</FButton>
-                    <FButton fkey="F4" disabled={!canEdit}>Edit</FButton>
-                    <FButton fkey="F5" disabled={!canCopy}>Copy</FButton>
-                    <FButton fkey="F6" disabled={!canMove}>Move</FButton>
-                    <FButton fkey="F7" disabled={!canMkdir} onClick={handleMkdir}>Mkdir</FButton>
-                    <FButton fkey="F8" disabled={!canDelete}>Delete</FButton>
-                    <FButton fkey="F9" disabled={false}>Expand</FButton>
-                    <FButton fkey="F10">Drives</FButton>
-                </CardContent>
-            </Card>
-        )
-    }
-    if (mode === "view") {
-        return (
-            <Card className='shrink-0'>
-                <CardContent className="justify-between overflow-hidden gap-1 pr-0">
-                    <FButton fkey="F1">Help</FButton>
-                    <FButton fkey="F2" disabled>Save</FButton>
-                    <FButton fkey="F3" disabled></FButton>
-                    <FButton fkey="F4" disabled></FButton>
-                    <FButton fkey="F5" disabled></FButton>
-                    <FButton fkey="F6" disabled></FButton>
-                    <FButton fkey="F7">Search</FButton>
-                    <FButton fkey="F8" disabled></FButton>
-                    <FButton fkey="F9">Resize</FButton>
-                    <FButton fkey="F10">Exit</FButton>
-                </CardContent>
-            </Card>
-        )
-    }
 }

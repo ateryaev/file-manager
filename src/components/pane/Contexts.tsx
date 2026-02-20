@@ -20,11 +20,12 @@ export type PaneState = {
 
 export function PanesContextProvider({ children }: { children: React.ReactNode }) {
     const [panes, setPanes] = useState<Record<Side, PaneState>>({
-        left: { location: "RAM:", mode: "files" },
+        left: { location: "DROP:", mode: "files" },
         right: { location: "RAM:/docs/2222/333", mode: "files" }
     });
 
     const [activeSide, setActiveSide] = useState<Side>("left");
+    const [size, setSize] = useState<number>(50);
 
     const updatePane = useCallback((side: Side, updates: Partial<PaneState>) => {
         setPanes(prev => ({
@@ -37,6 +38,7 @@ export function PanesContextProvider({ children }: { children: React.ReactNode }
         panes, //number | null, currently active pane id, null if no pane is active
         activeSide, //number, paneId to activate next,
         setActiveSide, //(paneId: number) => void, function to activate a pane by id
+        size, setSize, //number, size of the left pane in percentage (0-100)
         updatePane, //() => number, function to register a pane and get its id
     };
 

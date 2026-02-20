@@ -103,12 +103,11 @@ export const PaneFiles = memo(({ files, onExecute }:
                 <PaneFilesList files={files} cursor={cursor || ""}
                     handleSelect={handleSelect} handleExecute={handleExecute} />
             </CardContent>
-            <CardHeader
-                className="starting:bg-blue-100 cursor-pointer bg-gray-100 hover:bg-blue-100 transition-all"
-                onClick={() => handleExecute(files?.find(file => file.name === cursor)!)}>
+            <CardHeader className="bg-blue-50">
                 <div className="w-full flex justify-between items-center">
-                    <span className="truncate">{cursor}</span>
-                    <span className="text-blue-500">Enter</span>
+                    <span className="truncate text-blue-500 hover:text-blue-400 cursor-pointer"
+                        onClick={() => handleExecute(files?.find(file => file.name === cursor)!)}>{cursor}</span>
+                    &nbsp;
                 </div>
             </CardHeader>
         </>
